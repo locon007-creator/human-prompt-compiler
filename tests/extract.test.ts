@@ -94,4 +94,41 @@ describe('extractSemantics', () => {
     expect(requirement).toMatch(/jsx/i)
     expect(requirement).toMatch(/extra source files/i)
   })
+
+  it('extracts primary persistent views separately from the workflow', () => {
+    const draft = extractSemantics(makeInput(
+      'Build a personal timesheet. Main flow: Home → Punch In → Active Shift → Punch Out → Saved Day. Primary views: Home, Weekly, Monthly, History, Settings.'
+    ))
+
+    expect(draft.workflow).toEqual(['Home', 'Punch In', 'Active Shift', 'Punch Out', 'Saved Day'])
+    expect(draft.primaryViews).toEqual(['Home', 'Weekly', 'Monthly', 'History', 'Settings'])
+  })
+
+  it('preserves explicit navigation instructions as app structure instead of behavior noise', () => {
+    const draft = extractSemantics(makeInput(
+      'Build a personal timesheet. Primary views: Home, Weekly, Monthly, History, Settings. Navigation: Use persistent bottom navigation between Home, Weekly, Monthly, and History, with Settings in the top-right menu.'
+    ))
+
+    expect(draft.navigation.join(' ')).toMatch(/persistent bottom navigation/i)
+    expect(draft.navigation.join(' ')).toMatch(/Settings in the top-right menu/i)
+    expect(draft.behaviorUnits.join(' ')).not.toMatch(/bottom navigation/i)
+  })
+
+  it('forbids simulated phone and operating-system chrome for Single-file HTML', () => {
+    const input = snapshotInput({
+      idea: 'Build Drop & Hook Assistant.',
+      buildType: 'Android App',
+      creationFormat: 'Single-file HTML',
+      visualStyle: 'Premium Modern',
+    })
+
+    const requirement = extractSemantics(input).buildRequirements.join(' ')
+    expect(requirement).toMatch(/do not draw or simulate/i)
+    expect(requirement).toMatch(/status bar/i)
+    expect(requirement).toMatch(/battery/i)
+    expect(requirement).toMatch(/wi-?fi/i)
+    expect(requirement).toMatch(/notch/i)
+    expect(requirement).toMatch(/bezel/i)
+    expect(requirement).toMatch(/device frame/i)
+  })
 })
