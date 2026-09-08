@@ -8,6 +8,8 @@ export type PreparedSpec = {
   targetUser?: string
   platform?: string
   workflow: string[]
+  primaryViews: string[]
+  navigation: string[]
   criticalBehavior: BehaviorRule[]
   visualDirection: string[]
   boundaries: string[]
@@ -34,6 +36,8 @@ const freezeRule = (rule: BehaviorRule): Readonly<BehaviorRule> => {
 export const freezePreparedSpec = (spec: PreparedSpec): Readonly<PreparedSpec> => {
   spec.criticalBehavior.forEach(freezeRule)
   Object.freeze(spec.workflow)
+  Object.freeze(spec.primaryViews)
+  Object.freeze(spec.navigation)
   Object.freeze(spec.criticalBehavior)
   Object.freeze(spec.visualDirection)
   Object.freeze(spec.boundaries)
@@ -47,6 +51,8 @@ export const createPreparedSpec = (draft: LawfulDraft): Readonly<PreparedSpec> =
     product: draft.product,
     primaryJob: draft.primaryJob,
     workflow: [...draft.workflow],
+    primaryViews: [...(draft.primaryViews ?? [])],
+    navigation: [...(draft.navigation ?? [])],
     criticalBehavior: draft.criticalBehavior.map(cloneRule),
     visualDirection: [...draft.visualDirection],
     boundaries: [...draft.boundaries],
