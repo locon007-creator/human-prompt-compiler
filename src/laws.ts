@@ -9,6 +9,8 @@ export type LawfulDraft = {
   targetUser?: string
   platform?: string
   workflow: string[]
+  primaryViews?: string[]
+  navigation?: string[]
   criticalBehavior: BehaviorRule[]
   visualDirection: string[]
   boundaries: string[]
@@ -76,6 +78,8 @@ export const applyCoreLaws = (
     product: draft.product,
     primaryJob: draft.primaryJob,
     workflow: [...draft.workflow],
+    primaryViews: deduplicate(draft.primaryViews ?? []),
+    navigation: deduplicate(draft.navigation ?? []),
     criticalBehavior: groupBehaviorUnits(behaviorUnits),
     visualDirection: deduplicate(draft.visualDirection),
     boundaries: deduplicate(draft.boundaries),
