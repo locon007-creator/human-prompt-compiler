@@ -63,6 +63,10 @@ describe('Drop & Hook Assistant complexity benchmark', () => {
     expect(prompt).toMatch(/in-app maps/i)
     expect(prompt).not.toMatch(/payday|variable bill|recipe|payroll processing/i)
 
+    const wordCount = prompt.trim().split(/\s+/).length
+    console.log(`\nDROP & HOOK WORD COUNT: ${wordCount}\n`)
+    expect(wordCount).toBeLessThanOrEqual(400)
+
     console.log('\n--- COMPRESSED DROP & HOOK PROMPT ---\n')
     console.log(prompt)
     console.log('\n--- END COMPRESSED DROP & HOOK PROMPT ---\n')
