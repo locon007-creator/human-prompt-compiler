@@ -25,12 +25,16 @@ const containsBehaviorAction = (
   const clean = action.trim().replace(/[.!?]+$/, '')
 
   const pressing = clean.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
-  if (pressing?.[1] && pressing[2] && pressing[3]) {
-    const target = pressing[1].trim()
-    const effect = `${pressing[2]} ${pressing[3]}`
+  const pressingTarget = pressing?.[1]
+  const pressingVerb = pressing?.[2]
+  const pressingRest = pressing?.[3]
+  if (pressingTarget && pressingVerb && pressingRest) {
+    const target = pressingTarget.trim()
+    const effect = `${pressingVerb} ${pressingRest}`
 
     if (/^it$/i.test(target)) {
-      return Boolean(previousAction) && isControlIntroduction(previousAction) &&
+      if (!previousAction) return false
+      return isControlIntroduction(previousAction) &&
         containsMeaning(output, previousAction) && containsMeaning(output, effect)
     }
 
@@ -40,17 +44,23 @@ const containsBehaviorAction = (
   }
 
   const contents = clean.match(/^It\s+contains\s+exactly\s+(.+)$/i)
-  if (contents?.[1]) {
-    return Boolean(previousAction) && /\bsection\b/i.test(previousAction) &&
-      containsMeaning(output, previousAction) && containsMeaning(output, `containing exactly ${contents[1]}`)
+  const exactContents = contents?.[1]
+  if (exactContents) {
+    if (!previousAction) return false
+    return /\bsection\b/i.test(previousAction) &&
+      containsMeaning(output, previousAction) &&
+      containsMeaning(output, `containing exactly ${exactContents}`)
   }
 
   const titleDetail = clean.match(/^Show\s+(.+?)\s+near\s+the\s+(.+?)\s+title$/i)
-  if (titleDetail?.[1] && titleDetail[2] && previousAction) {
+  const detailText = titleDetail?.[1]
+  const detailScreen = titleDetail?.[2]
+  if (detailText && detailScreen && previousAction) {
     const previousScreen = previousAction.trim().match(/^(.+?)\s+shows\s+(.+)$/i)
-    if (previousScreen?.[1] && normalize(previousScreen[1]) === normalize(titleDetail[2])) {
+    const previousScreenName = previousScreen?.[1]
+    if (previousScreenName && normalize(previousScreenName) === normalize(detailScreen)) {
       return containsMeaning(output, previousAction) &&
-        containsMeaning(output, `${titleDetail[1]} near the title`)
+        containsMeaning(output, `${detailText} near the title`)
     }
   }
 
