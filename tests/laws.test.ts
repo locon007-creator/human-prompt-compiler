@@ -100,4 +100,22 @@ describe('applyCoreLaws', () => {
       /Use a private local archive for completed entries/i,
     )
   })
+
+  it('preserves source order across behavior and unresolved functional instructions', () => {
+    const first = 'Current appointments remain visible in a compact list.'
+    const second = 'Pressing Add Appointment opens provider search.'
+    const third = 'Completed appointments remain in the local archive.'
+
+    const result = applyCoreLaws(baseDraft({
+      behaviorUnits: [second],
+      unresolved: [first, third],
+      sourceUnits: [first, second, third],
+    }), androidInput)
+
+    expect(result.criticalBehavior.map((rule) => rule.action)).toEqual([
+      'Current appointments remain visible in a compact list',
+      'Pressing Add Appointment opens provider search',
+      'Completed appointments remain in the local archive',
+    ])
+  })
 })
