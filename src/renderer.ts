@@ -1,5 +1,6 @@
 import type { PreparedSpec } from './prepared-spec.js'
 import type { BehaviorRule } from './relationships.js'
+import { compactInstruction, compactTrigger, compactVisual } from './briefing.js'
 
 const sentence = (value: string): string => {
   const clean = value.trim().replace(/[.!?]+$/, '')
@@ -16,15 +17,15 @@ const joinNatural = (items: string[]): string => {
 
 const renderRule = (rule: Readonly<BehaviorRule>): string => {
   const parts: string[] = []
-  if (rule.trigger) parts.push(rule.trigger.trim().replace(/[.!?]+$/, ''))
+  if (rule.trigger) parts.push(compactTrigger(rule.trigger))
   if (rule.condition?.length) parts.push(`if ${joinNatural(rule.condition)}`)
 
   const lead = parts.length ? `${parts.join(', ')}, ` : ''
-  const action = rule.action.trim().replace(/[.!?]+$/, '')
+  const action = compactInstruction(rule.action)
   const first = sentence(`${lead}${action}`)
 
   if (!rule.result?.length) return first
-  const result = sentence(joinNatural(rule.result))
+  const result = sentence(joinNatural(rule.result.map(compactInstruction)))
   return `${first} ${result}`
 }
 
@@ -69,7 +70,7 @@ const fuseImmediateControlPronounPair = (
   const match = next.match(/^Pressing\s+it\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
   if (!match?.[1] || !match[2]) return null
 
-  return sentence(`${current} that ${match[1].toLowerCase()} ${match[2]}`)
+  return sentence(compactInstruction(`${current} that ${match[1].toLowerCase()} ${match[2]}`))
 }
 
 const fuseSectionContentsPair = (
@@ -84,7 +85,7 @@ const fuseSectionContentsPair = (
   const match = next.match(/^It\s+contains\s+exactly\s+(.+)$/i)
   if (!match?.[1]) return null
 
-  return sentence(`${current} containing exactly ${match[1]}`)
+  return sentence(compactInstruction(`${current} containing exactly ${match[1]}`))
 }
 
 const fuseScreenTitleDetailPair = (
@@ -100,7 +101,7 @@ const fuseScreenTitleDetailPair = (
   if (!screen?.[1] || !detail?.[1] || !detail[2]) return null
   if (normalizePhrase(screen[1]) !== normalizePhrase(detail[2])) return null
 
-  return sentence(`${current}, with ${detail[1]} near the title`)
+  return sentence(compactInstruction(`${current}, with ${detail[1]} near the title`))
 }
 
 const fusePressingPair = (
@@ -118,7 +119,7 @@ const fusePressingPair = (
   if (/^(?:it|this|that|this one|that one)$/i.test(target)) return null
   if (!containsPhrase(current, target)) return null
 
-  return sentence(`${current} that ${match[2].toLowerCase()} ${match[3]}`)
+  return sentence(compactInstruction(`${current} that ${match[2].toLowerCase()} ${match[3]}`))
 }
 
 const fuseBehaviorPair = (
@@ -182,20 +183,20 @@ const renderExperience = (spec: Readonly<PreparedSpec>): string => {
 const renderMission = (spec: Readonly<PreparedSpec>): string => {
   const audience = spec.targetUser ? ` for ${spec.targetUser}` : ''
   const experience = renderExperience(spec)
-  return sentence(`Build ${spec.product}${audience}${experience}. Its one job is to ${spec.primaryJob}`)
+  return sentence(`Build ${spec.product}${audience}${experience}. One job: ${spec.primaryJob}`)
 }
 
 const renderStructure = (spec: Readonly<PreparedSpec>): string[] => {
   if (spec.primaryViews.length && spec.navigation.length) {
     return [
-      `${sentence(`Use these primary views: ${joinNatural(spec.primaryViews)}`)} ${spec.navigation.map(sentence).join(' ')}`,
+      `${sentence(`Primary views: ${joinNatural(spec.primaryViews)}`)} ${spec.navigation.map(sentence).join(' ')}`,
     ]
   }
 
   const paragraphs: string[] = []
 
   if (spec.primaryViews.length) {
-    paragraphs.push(sentence(`Use these primary views: ${joinNatural(spec.primaryViews)}`))
+    paragraphs.push(sentence(`Primary views: ${joinNatural(spec.primaryViews)}`))
   }
 
   if (spec.navigation.length) {
@@ -211,14 +212,14 @@ export const renderPrompt = (spec: Readonly<PreparedSpec>): string => {
   const paragraphs: string[] = [spec.role.trim(), renderMission(spec)]
 
   if (spec.workflow.length) {
-    paragraphs.push(sentence(`Keep the main flow: ${spec.workflow.join(' → ')}`))
+    paragraphs.push(sentence(`Flow: ${spec.workflow.join(' → ')}`))
   }
 
   paragraphs.push(...renderStructure(spec))
   paragraphs.push(...renderBehavior(spec.criticalBehavior))
 
   if (spec.visualDirection.length) {
-    paragraphs.push(spec.visualDirection.map(sentence).join(' '))
+    paragraphs.push(spec.visualDirection.map((value) => sentence(compactVisual(value))).join(' '))
   }
 
   if (spec.boundaries.length) {
