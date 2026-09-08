@@ -108,4 +108,30 @@ describe('renderPrompt', () => {
     expect(structureParagraphs[0]).toMatch(/bottom navigation/i)
     expect(structureParagraphs[0]).toMatch(/top-right menu/i)
   })
+
+  it('fuses a direct action and its pressing behavior into one stronger human sentence', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      product: 'appointment planner',
+      primaryJob: 'book and track personal appointments',
+      workflow: [],
+      primaryViews: [],
+      navigation: [],
+      criticalBehavior: [
+        { action: 'Appointments starts with an Add Appointment action' },
+        { action: 'Pressing Add Appointment opens provider and service search' },
+        {
+          trigger: 'When reminder time arrives',
+          action: 'notify the user about the upcoming appointment',
+        },
+      ],
+    })))
+
+    expect(output).toMatch(/Appointments starts with an Add Appointment action that opens provider and service search\./i)
+    expect(output).not.toMatch(/Pressing Add Appointment opens provider and service search\./i)
+
+    const paragraphs = output.split(/\n\n/)
+    const reminderParagraph = paragraphs.find((paragraph) => /When reminder time arrives/i.test(paragraph))
+    expect(reminderParagraph).toBeTruthy()
+    expect(reminderParagraph).not.toMatch(/Appointments starts with/i)
+  })
 })
