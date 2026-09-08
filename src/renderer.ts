@@ -43,24 +43,92 @@ const containsPhrase = (value: string, phrase: string): boolean => {
   return needle.trim().length > 0 && haystack.includes(needle)
 }
 
+const directActions = (
+  first: Readonly<BehaviorRule>,
+  second: Readonly<BehaviorRule>,
+): [string, string] | null => {
+  if (!canFuseDirectAction(first) || !canFuseDirectAction(second)) return null
+  return [
+    first.action.trim().replace(/[.!?]+$/, ''),
+    second.action.trim().replace(/[.!?]+$/, ''),
+  ]
+}
+
+const fuseImmediateControlPronounPair = (
+  first: Readonly<BehaviorRule>,
+  second: Readonly<BehaviorRule>,
+): string | null => {
+  const actions = directActions(first, second)
+  if (!actions) return null
+  const [current, next] = actions
+
+  if (!/^(?:include|add|place|use)\b.*\b(?:button|action|control|selector|field)\b/i.test(current)) {
+    return null
+  }
+
+  const match = next.match(/^Pressing\s+it\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
+  if (!match?.[1] || !match[2]) return null
+
+  return sentence(`${current} that ${match[1].toLowerCase()} ${match[2]}`)
+}
+
+const fuseSectionContentsPair = (
+  first: Readonly<BehaviorRule>,
+  second: Readonly<BehaviorRule>,
+): string | null => {
+  const actions = directActions(first, second)
+  if (!actions) return null
+  const [current, next] = actions
+
+  if (!/^(?:attach|include|add|show)\b.*\bsection\b/i.test(current)) return null
+  const match = next.match(/^It\s+contains\s+exactly\s+(.+)$/i)
+  if (!match?.[1]) return null
+
+  return sentence(`${current} containing exactly ${match[1]}`)
+}
+
+const fuseScreenTitleDetailPair = (
+  first: Readonly<BehaviorRule>,
+  second: Readonly<BehaviorRule>,
+): string | null => {
+  const actions = directActions(first, second)
+  if (!actions) return null
+  const [current, next] = actions
+
+  const screen = current.match(/^(.+?)\s+shows\s+(.+)$/i)
+  const detail = next.match(/^Show\s+(.+?)\s+near\s+the\s+(.+?)\s+title$/i)
+  if (!screen?.[1] || !detail?.[1] || !detail[2]) return null
+  if (normalizePhrase(screen[1]) !== normalizePhrase(detail[2])) return null
+
+  return sentence(`${current}, with ${detail[1]} near the title`)
+}
+
 const fusePressingPair = (
   first: Readonly<BehaviorRule>,
   second: Readonly<BehaviorRule>,
 ): string | null => {
-  if (!canFuseDirectAction(first) || !canFuseDirectAction(second)) return null
+  const actions = directActions(first, second)
+  if (!actions) return null
+  const [current, next] = actions
 
-  const next = second.action.trim().replace(/[.!?]+$/, '')
   const match = next.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
   if (!match?.[1] || !match[2] || !match[3]) return null
 
   const target = match[1].trim()
   if (/^(?:it|this|that|this one|that one)$/i.test(target)) return null
-
-  const current = first.action.trim().replace(/[.!?]+$/, '')
   if (!containsPhrase(current, target)) return null
 
   return sentence(`${current} that ${match[2].toLowerCase()} ${match[3]}`)
 }
+
+const fuseBehaviorPair = (
+  first: Readonly<BehaviorRule>,
+  second: Readonly<BehaviorRule>,
+): string | null =>
+  fuseImmediateControlPronounPair(first, second) ??
+  fuseSectionContentsPair(first, second) ??
+  fuseScreenTitleDetailPair(first, second) ??
+  fusePressingPair(first, second)
 
 const renderBehavior = (rules: readonly Readonly<BehaviorRule>[]): string[] => {
   const paragraphs: string[] = []
@@ -71,7 +139,7 @@ const renderBehavior = (rules: readonly Readonly<BehaviorRule>[]): string[] => {
 
     const next = rules[index + 1]
     if (next) {
-      const fused = fusePressingPair(current, next)
+      const fused = fuseBehaviorPair(current, next)
       if (fused) {
         paragraphs.push(fused)
         index += 1
