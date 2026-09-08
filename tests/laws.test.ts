@@ -40,9 +40,24 @@ describe('applyCoreLaws', () => {
       ],
     }), androidInput)
 
-    expect(result.visualDirection).toEqual([
-      'Use strong visual hierarchy with clear spacing and typography.',
-    ])
+    expect(result.visualDirection.join(' ')).toMatch(/strong visual hierarchy with clear spacing and typography/i)
+  })
+
+  it('turns premium style into one concise finished-product visual signal without adding functionality', () => {
+    const result = applyCoreLaws(baseDraft({
+      product: 'reading tracker',
+      primaryJob: 'track books and reading progress',
+      visualDirection: [
+        'Use a calm mobile interface with strong hierarchy, clean spacing, and thumb-friendly controls.',
+      ],
+    }), androidInput)
+
+    expect(result.visualDirection).toHaveLength(1)
+    expect(result.visualDirection[0]).toMatch(/finished premium product, not a prototype/i)
+    expect(result.visualDirection[0]).toMatch(/purposeful composition/i)
+    expect(result.visualDirection[0]).toMatch(/strong hierarchy/i)
+    expect(result.visualDirection[0]).toMatch(/thumb-friendly controls/i)
+    expect(result.criticalBehavior).toEqual([])
   })
 
   it('preserves optionality language', () => {
