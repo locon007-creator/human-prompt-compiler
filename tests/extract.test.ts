@@ -114,12 +114,12 @@ describe('extractSemantics', () => {
       visualStyle: 'Premium Modern',
     })
 
-    const draft = extractSemantics(input)
-    const requirement = draft.buildRequirements.join(' ')
-    expect(requirement).toMatch(/one self-contained index\.html/i)
+    const requirement = extractSemantics(input).buildRequirements.join(' ')
+    expect(requirement).toMatch(/one self-contained index\.html only/i)
     expect(requirement).toMatch(/inline css/i)
     expect(requirement).toMatch(/inline javascript/i)
-    expect(requirement).toMatch(/no frameworks or extra files/i)
+    expect(requirement).toMatch(/No React, Vite, npm, JSX/i)
+    expect(requirement).toMatch(/extra source files/i)
   })
 
   it('keeps the Arena delivery contract compact', () => {
@@ -135,7 +135,7 @@ describe('extractSemantics', () => {
 
     expect(words.length).toBeLessThanOrEqual(42)
     expect(requirement).toMatch(/360–430 px/i)
-    expect(requirement).toMatch(/no simulated device chrome/i)
+    expect(requirement).toMatch(/No simulated device chrome/i)
   })
 
   it('extracts primary persistent views separately from the workflow', () => {
@@ -177,6 +177,13 @@ describe('extractSemantics', () => {
     })
 
     const requirement = extractSemantics(input).buildRequirements.join(' ')
-    expect(requirement).toMatch(/no simulated device chrome/i)
+    expect(requirement).toMatch(/No simulated device chrome/i)
+    expect(requirement).toMatch(/phone shell/i)
+    expect(requirement).toMatch(/status bar/i)
+    expect(requirement).toMatch(/battery/i)
+    expect(requirement).toMatch(/wi-?fi/i)
+    expect(requirement).toMatch(/notch/i)
+    expect(requirement).toMatch(/bezel/i)
+    expect(requirement).toMatch(/device frame/i)
   })
 })
