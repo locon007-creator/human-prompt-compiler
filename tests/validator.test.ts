@@ -120,6 +120,17 @@ describe('validateCompile', () => {
     expect(() => validateCompile(input, spec, compressed.replace('title and author search', 'a blank page'))).toThrow(/behavior|critical/i)
   })
 
+  it('accepts the shorter named-control briefing only when its exact effect survives', () => {
+    const spec = compressedSpec([
+      { action: 'Library starts with an Add Book button' },
+      { action: 'Pressing Add Book turns the page into title and author search' },
+    ])
+    const compressed = compressedOutput('Library: Add Book turns the page into title and author search.')
+
+    expect(() => validateCompile(input, spec, compressed)).not.toThrow()
+    expect(() => validateCompile(input, spec, compressed.replace('title and author search', 'a blank page'))).toThrow(/behavior|critical/i)
+  })
+
   it('accepts safe immediate control pronoun compression only when the effect survives', () => {
     const spec = compressedSpec([
       { action: 'Include an Edit Book button at top-right' },
