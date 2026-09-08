@@ -29,6 +29,16 @@ describe('extractSemantics', () => {
     expect(draft.behaviorUnits.join(' ')).not.toMatch(/gps/i)
   })
 
+  it('keeps positive behavior containing without out of the boundary bucket', () => {
+    const draft = extractSemantics(makeInput(
+      'Build a reading tracker. Pressing Quick Add opens a compact sheet for saving a book without leaving the current view.'
+    ))
+
+    expect(draft.boundaries.join(' ')).not.toMatch(/Quick Add/i)
+    expect([...draft.behaviorUnits, ...draft.unresolved].join(' ')).toMatch(/Quick Add opens a compact sheet/i)
+    expect([...draft.behaviorUnits, ...draft.unresolved].join(' ')).toMatch(/without leaving the current view/i)
+  })
+
   it('does not invent a workflow when none is present', () => {
     const draft = extractSemantics(makeInput(
       'Build a grocery list app for one person. It should save items locally and feel calm and minimal.'
