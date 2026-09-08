@@ -71,4 +71,24 @@ describe('renderPrompt', () => {
     const output = renderPrompt(createPreparedSpec(makeDraft()))
     expect(output).not.toMatch(/phone frame|device frame|mockup|bezel/i)
   })
+
+  it('renders explicit primary views separately from the workflow', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      primaryViews: ['Home', 'Weekly', 'Monthly', 'History', 'Settings'],
+    })))
+
+    expect(output).toMatch(/primary views: Home, Weekly, Monthly, History, and Settings/i)
+    expect(output).toMatch(/persistent navigation between Home, Weekly, Monthly, History, and Settings/i)
+  })
+
+  it('uses explicit navigation instructions instead of inventing a navigation pattern', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      primaryViews: ['Home', 'Weekly', 'Monthly', 'History', 'Settings'],
+      navigation: ['Use persistent bottom navigation between Home, Weekly, Monthly, and History, with Settings in the top-right menu.'],
+    })))
+
+    expect(output).toMatch(/persistent bottom navigation between Home, Weekly, Monthly, and History/i)
+    expect(output).toMatch(/Settings in the top-right menu/i)
+    expect(output).not.toMatch(/persistent navigation between Home, Weekly, Monthly, History, and Settings/i)
+  })
 })
