@@ -60,6 +60,12 @@ const renderMission = (spec: Readonly<PreparedSpec>): string => {
 }
 
 const renderStructure = (spec: Readonly<PreparedSpec>): string[] => {
+  if (spec.primaryViews.length && spec.navigation.length) {
+    return [
+      `${sentence(`Use these primary views: ${joinNatural(spec.primaryViews)}`)} ${spec.navigation.map(sentence).join(' ')}`,
+    ]
+  }
+
   const paragraphs: string[] = []
 
   if (spec.primaryViews.length) {
