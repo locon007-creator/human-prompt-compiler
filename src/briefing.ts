@@ -1,8 +1,17 @@
 const clean = (value: string): string => value.trim().replace(/[.!?]+$/, '').replace(/\s+/g, ' ')
 
 const compactEffect = (value: string): string => clean(value)
-  .replace(/^the\s+page\s+into\s+a\s+(.+?)\s+search\s+experience$/i, '$1 search')
   .replace(/^a\s+(.+?)\s+search\s+experience$/i, '$1 search')
+
+const compactControlEffect = (verb: string, effect: string): string => {
+  const cleanEffect = clean(effect)
+  if (/^turn/i.test(verb)) {
+    const searchExperience = cleanEffect.match(/^the\s+page\s+into\s+a\s+(.+?)\s+search\s+experience$/i)
+    if (searchExperience?.[1]) return `opens ${searchExperience[1]} search`
+    return `${verb.toLowerCase()} ${cleanEffect}`
+  }
+  return `${verb.toLowerCase()} ${compactEffect(cleanEffect)}`
+}
 
 export const compactTrigger = (value: string): string => {
   const text = clean(value)
@@ -23,18 +32,19 @@ export const compactInstruction = (value: string): string => {
 
   const startsWith = text.match(/^(.+?)\s+starts\s+with\s+(?:an?\s+)?(.+?)\s+(?:button|action)\s+that\s+(opens?|turns?)\s+(.+)$/i)
   if (startsWith?.[1] && startsWith[2] && startsWith[3] && startsWith[4]) {
-    const verb = /^turn/i.test(startsWith[3]) ? 'opens' : startsWith[3].toLowerCase()
-    return `${startsWith[1]}: ${startsWith[2]} ${verb} ${compactEffect(startsWith[4])}`
+    return `${startsWith[1]}: ${startsWith[2]} ${compactControlEffect(startsWith[3], startsWith[4])}`
   }
 
   const includeButton = text.match(/^Include\s+(?:an?\s+)?(.+?)\s+button\s+at\s+(.+?)\s+that\s+(opens?|shows?|starts?|turns?)\s+(.+)$/i)
   if (includeButton?.[1] && includeButton[2] && includeButton[3] && includeButton[4]) {
-    const verb = /^turn/i.test(includeButton[3]) ? 'opens' : includeButton[3].toLowerCase()
     let effect = compactEffect(includeButton[4])
     effect = effect
       .replace(/^a\s+half-height\s+bottom\s+sheet\s+containing\s+a\s+route\s+timeline\s+for\s+editing\s+stops\s+and\s+an?\s+Equipment\s+section\s+for\s+editing\s+the\s+truck\s+and\s+trailer\s+information\s+without\s+leaving\s+the\s+active\s+day$/i,
         'a half-height bottom sheet with editable route timeline + truck/trailer Equipment, without leaving active day')
-    return `${includeButton[1]} (${includeButton[2]}) ${verb} ${effect}`
+    const effectText = /^turn/i.test(includeButton[3])
+      ? compactControlEffect(includeButton[3], effect)
+      : `${includeButton[3].toLowerCase()} ${effect}`
+    return `${includeButton[1]} (${includeButton[2]}) ${effectText}`
   }
 
   const required = text.match(/^(.+?)\s+requires\s+(.+)$/i)
@@ -52,7 +62,7 @@ export const compactInstruction = (value: string): string => {
 
   const afterSelection = text.match(/^After\s+selecting\s+a\s+result,\s*let\s+the\s+(?:user|driver|worker)\s+(.+?),\s*then\s+add,\s*edit,\s*remove,\s*and\s*reorder\s+(.+)$/i)
   if (afterSelection?.[1] && afterSelection[2]) {
-    return `After selection, ${afterSelection[1].replace(/^save\s+the\s+/i, 'save ')}; add/edit/remove/reorder ${afterSelection[2]}`
+    return `After selection, ${afterSelection[1]}; add/edit/remove/reorder ${afterSelection[2]}`
   }
 
   const crudAction = text.match(/^let\s+the\s+(?:user|driver|worker)\s+save\s+the\s+(.+?),\s*then\s+add,\s*edit,\s*remove,\s*and\s*reorder\s+(.+)$/i)
@@ -75,7 +85,7 @@ export const compactInstruction = (value: string): string => {
 
   const finishDay = text.match(/^Finishing\s+the\s+day\s+saves\s+the\s+completed\s+daily\s+log\s+and\s+clears\s+the\s+active-day\s+state\s+while\s+preserving\s+(.+)$/i)
   if (finishDay?.[1]) {
-    return `Finish Day: save log, clear active state; preserve ${finishDay[1]}`
+    return `Finish Day saves the log, clears active-day state, and preserves ${finishDay[1]}`
   }
 
   const persistence = text.match(/^Persist\s+the\s+active\s+day\s+so\s+closing\s+or\s+reloading\s+never\s+loses\s+(.+)$/i)
@@ -83,13 +93,13 @@ export const compactInstruction = (value: string): string => {
     return `Persist ${persistence[1]} across closing/reloading`
   }
 
-  const recordTime = text.match(/^record\s+the\s+(?:arrival|departure)\s+time\s+and\s+(.+)$/i)
-  if (recordTime?.[1]) return `record time; ${recordTime[1]}`
-
   const departureAction = text.match(/^record\s+the\s+departure\s+time,\s*move\s+that\s+(.+?)\s+to\s+Completed,\s*and\s+make\s+the\s+next\s+route\s+(.+?)\s+active$/i)
   if (departureAction?.[1] && departureAction[2]) {
     return `record time; complete ${departureAction[1]}; activate next route ${departureAction[2]}`
   }
+
+  const recordTime = text.match(/^record\s+the\s+(?:arrival|departure)\s+time\s+and\s+(.+)$/i)
+  if (recordTime?.[1]) return `record time and ${recordTime[1]}`
 
   const completed = text.match(/^Completed\s+(.+?)\s+remain\s+available\s+in\s+a\s+collapsible\s+completed\s+section\s+with\s+arrival,\s*departure,\s*and\s+saved\s+(.+)$/i)
   if (completed?.[1] && completed[2]) {
@@ -141,7 +151,7 @@ const compactPremiumStyle = (text: string): string | null => {
     .replace(/,?\s*and\s+polished\s+visual\s+details$/i, '')
     .replace(/polished\s+visual\s+details/i, '')
     .trim()
-  return `${descriptors.replace(/^a\s+/i, '')} UI: ${details}; finished, not a prototype: ${finish}`
+  return `${descriptors.replace(/^a\s+/i, '')} UI: ${details}; finished premium product, not a prototype: ${finish}`
 }
 
 export const compactVisual = (value: string): string => {
