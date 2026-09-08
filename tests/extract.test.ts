@@ -62,4 +62,36 @@ describe('extractSemantics', () => {
     expect(draft.visualDirection.join(' ')).toMatch(/subtle transitions/i)
     expect(draft.behaviorUnits.join(' ')).not.toMatch(/typography|transitions/i)
   })
+
+  it('takes platform experience from buildType instead of creationFormat', () => {
+    const input = snapshotInput({
+      idea: 'Build a personal finance assistant.',
+      buildType: 'Android App',
+      creationFormat: 'Single-file HTML',
+      visualStyle: 'Premium Modern',
+    })
+
+    const draft = extractSemantics(input)
+    expect(draft.platform).toBe('Android App')
+  })
+
+  it('turns Single-file HTML creationFormat into a hard delivery requirement', () => {
+    const input = snapshotInput({
+      idea: 'Build a personal finance assistant.',
+      buildType: 'Android App',
+      creationFormat: 'Single-file HTML',
+      visualStyle: 'Premium Modern',
+    })
+
+    const draft = extractSemantics(input)
+    const requirement = draft.buildRequirements.join(' ')
+    expect(requirement).toMatch(/one self-contained index\.html/i)
+    expect(requirement).toMatch(/inline css/i)
+    expect(requirement).toMatch(/inline javascript/i)
+    expect(requirement).toMatch(/do not use react/i)
+    expect(requirement).toMatch(/vite/i)
+    expect(requirement).toMatch(/npm/i)
+    expect(requirement).toMatch(/jsx/i)
+    expect(requirement).toMatch(/extra source files/i)
+  })
 })
