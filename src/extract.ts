@@ -68,6 +68,22 @@ const isVisualDirection = (unit: string): boolean =>
 const isBehavior = (unit: string): boolean =>
   /\b(?:when|whenever|if|once|after|before|beginning|starting|save|store|persist|require|required|optional|mark|show|ask|update|calculate|record|remember|notify|notification)\b/i.test(unit)
 
+const platformFromBuildType = (buildType: string): string | undefined => {
+  const value = buildType.trim()
+  if (/\bandroid\b/i.test(value)) return 'Android App'
+  if (/\bios\b|\biphone\b|\bipad\b/i.test(value)) return 'iOS App'
+  if (/\bweb\s*app\b|\bwebsite\b/i.test(value) && !/\bapp\s*\/\s*web\s*app\b/i.test(value)) return 'Web App'
+  return undefined
+}
+
+const requirementFromCreationFormat = (creationFormat: string): string | undefined => {
+  if (!/(?:single[-\s]?file\s+html|standalone\s+html|html[-\s]?only|index\.html)/i.test(creationFormat)) {
+    return undefined
+  }
+
+  return 'Build this as one self-contained index.html only, with all CSS and JavaScript inline. Do not use React, Vite, npm, JSX, external frameworks, or extra source files. It must open and run directly as HTML.'
+}
+
 export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft => {
   const sourceUnits = splitSourceUnits(input.idea)
   const workflow: string[] = []
@@ -76,6 +92,9 @@ export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft 
   const boundaries: string[] = []
   const buildRequirements: string[] = []
   const unresolved: string[] = []
+
+  const selectedFormatRequirement = requirementFromCreationFormat(input.creationFormat)
+  if (selectedFormatRequirement) buildRequirements.push(selectedFormatRequirement)
 
   let product = ''
   let primaryJob = ''
@@ -99,8 +118,6 @@ export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft 
       continue
     }
 
-    // Delivery/build-format instructions must own their sentence before the
-    // generic "Build ..." product detector sees it.
     if (isBuildRequirement(unit)) {
       buildRequirements.push(unit)
       continue
@@ -129,7 +146,6 @@ export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft 
   const draft: SemanticDraft = {
     product,
     primaryJob,
-    platform: input.creationFormat,
     workflow,
     behaviorUnits,
     visualDirection,
@@ -139,6 +155,8 @@ export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft 
     sourceUnits,
   }
 
+  const platform = platformFromBuildType(input.buildType)
   if (targetUser) draft.targetUser = targetUser
+  if (platform) draft.platform = platform
   return draft
 }
