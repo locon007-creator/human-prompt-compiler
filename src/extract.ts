@@ -81,7 +81,7 @@ const requirementFromCreationFormat = (creationFormat: string): string | undefin
     return undefined
   }
 
-  return 'Build this as one self-contained index.html only, with all CSS and JavaScript inline. Do not use React, Vite, npm, JSX, external frameworks, or extra source files. It must open and run directly as HTML.'
+  return 'Build this as one self-contained index.html only, with inline CSS and inline JavaScript. Do not use React, Vite, npm, JSX, external frameworks, or extra source files. It must open and run directly as HTML.'
 }
 
 export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft => {
