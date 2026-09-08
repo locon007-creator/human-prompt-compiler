@@ -135,6 +135,23 @@ describe('renderPrompt', () => {
     expect(reminderParagraph).not.toMatch(/Appointments starts with/i)
   })
 
+  it('fuses named turn interactions without repeating the control name', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      product: 'reading tracker',
+      primaryJob: 'track books and reading progress',
+      workflow: [],
+      primaryViews: [],
+      navigation: [],
+      criticalBehavior: [
+        { action: 'Library starts with an Add Book button' },
+        { action: 'Pressing Add Book turns the page into title and author search' },
+      ],
+    })))
+
+    expect(output).toMatch(/Library starts with an Add Book button that turns the page into title and author search\./i)
+    expect(output).not.toMatch(/Pressing Add Book turns/i)
+  })
+
   it('never guesses an ambiguous pressing pronoun from a substring match', () => {
     const output = renderPrompt(createPreparedSpec(makeDraft({
       product: 'reading tracker',
