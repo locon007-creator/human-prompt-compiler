@@ -84,7 +84,12 @@ const isBuildRequirement = (unit: string): boolean =>
 const isVisualDirection = (unit: string): boolean =>
   /\b(?:visual|style|premium|modern|minimal|hierarchy|spacing|typography|transition|polish|polished|thumb-friendly|layout|android-style|ios-style|color|theme|sheet|dialog)\b/i.test(unit)
 
+const isUiActionIntroduction = (unit: string): boolean =>
+  /\bstarts\s+with\s+(?:an?\s+)?[^.!?]*\b(?:button|action|control|field|search|selector)\b/i.test(unit) ||
+  /^include\s+(?:an?\s+)?[^.!?]*\b(?:button|action|control|field|search|selector)\b/i.test(unit)
+
 const isBehavior = (unit: string): boolean =>
+  isUiActionIntroduction(unit) ||
   /\b(?:when|whenever|if|once|after|before|beginning|starting|pressing|save|store|persist|require|required|optional|mark|show|ask|update|calculate|record|remember|notify|notification|open|opens|turn|turns)\b/i.test(unit)
 
 const platformFromBuildType = (buildType: string): string | undefined => {
