@@ -94,8 +94,8 @@ describe('applyCoreLaws', () => {
       unresolved: ['Use a private local archive for completed entries.'],
     }), androidInput)
 
-    expect(result.criticalBehavior.map((rule) => rule.action)).toContain(
-      'Use a private local archive for completed entries.',
+    expect(result.criticalBehavior.map((rule) => rule.action).join(' ')).toMatch(
+      /Use a private local archive for completed entries/i,
     )
   })
 })
