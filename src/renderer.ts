@@ -50,7 +50,7 @@ const fusePressingPair = (
   if (!canFuseDirectAction(first) || !canFuseDirectAction(second)) return null
 
   const next = second.action.trim().replace(/[.!?]+$/, '')
-  const match = next.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?)\s+(.+)$/i)
+  const match = next.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
   if (!match?.[1] || !match[2] || !match[3]) return null
 
   const target = match[1].trim()
