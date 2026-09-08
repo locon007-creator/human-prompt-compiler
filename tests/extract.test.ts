@@ -114,6 +114,17 @@ describe('extractSemantics', () => {
     expect(draft.behaviorUnits.join(' ')).not.toMatch(/bottom navigation/i)
   })
 
+  it('recognizes natural navigation sentences without requiring a Navigation label', () => {
+    const draft = extractSemantics(makeInput(
+      'Build a reading tracker. Primary views: Library, Discover, Saved, Profile. Use persistent bottom navigation for Library, Discover, and Saved, with Profile available from the top-right menu.'
+    ))
+
+    expect(draft.navigation.join(' ')).toMatch(/persistent bottom navigation/i)
+    expect(draft.navigation.join(' ')).toMatch(/Profile available from the top-right menu/i)
+    expect(draft.behaviorUnits.join(' ')).not.toMatch(/bottom navigation/i)
+    expect(draft.visualDirection.join(' ')).not.toMatch(/bottom navigation/i)
+  })
+
   it('forbids simulated phone and operating-system chrome for Single-file HTML', () => {
     const input = snapshotInput({
       idea: 'Build Drop & Hook Assistant.',
