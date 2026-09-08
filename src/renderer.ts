@@ -28,6 +28,50 @@ const renderRule = (rule: Readonly<BehaviorRule>): string => {
   return `${first} ${result}`
 }
 
+const canFuseDirectAction = (rule: Readonly<BehaviorRule>): boolean =>
+  !rule.trigger && !rule.condition?.length && !rule.result?.length
+
+const fusePressingPair = (
+  first: Readonly<BehaviorRule>,
+  second: Readonly<BehaviorRule>,
+): string | null => {
+  if (!canFuseDirectAction(first) || !canFuseDirectAction(second)) return null
+
+  const next = second.action.trim().replace(/[.!?]+$/, '')
+  const match = next.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?)\s+(.+)$/i)
+  if (!match?.[1] || !match[2] || !match[3]) return null
+
+  const target = match[1].trim()
+  const current = first.action.trim().replace(/[.!?]+$/, '')
+  if (!current.toLowerCase().includes(target.toLowerCase())) return null
+
+  return sentence(`${current} that ${match[2].toLowerCase()} ${match[3]}`)
+}
+
+const renderBehavior = (rules: readonly Readonly<BehaviorRule>[]): string[] => {
+  const paragraphs: string[] = []
+
+  for (let index = 0; index < rules.length; index += 1) {
+    const current = rules[index]
+    if (!current) continue
+
+    const next = rules[index + 1]
+    if (next) {
+      const fused = fusePressingPair(current, next)
+      if (fused) {
+        paragraphs.push(fused)
+        index += 1
+        continue
+      }
+    }
+
+    const rendered = renderRule(current)
+    if (rendered) paragraphs.push(rendered)
+  }
+
+  return paragraphs
+}
+
 const renderPlatform = (platform: string): string => {
   const normalized = platform.trim()
   if (/^android\s+app$/i.test(normalized)) return 'an Android app'
@@ -89,11 +133,7 @@ export const renderPrompt = (spec: Readonly<PreparedSpec>): string => {
   }
 
   paragraphs.push(...renderStructure(spec))
-
-  for (const rule of spec.criticalBehavior) {
-    const rendered = renderRule(rule)
-    if (rendered) paragraphs.push(rendered)
-  }
+  paragraphs.push(...renderBehavior(spec.criticalBehavior))
 
   if (spec.visualDirection.length) {
     paragraphs.push(spec.visualDirection.map(sentence).join(' '))
