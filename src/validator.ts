@@ -38,8 +38,8 @@ const containsBehaviorAction = (
 
     if (/^it$/i.test(target)) {
       if (!previousAction || !isControlIntroduction(previousAction)) return false
-      const fused = compactInstruction(`${previousAction.trim().replace(/[.!?]+$/, '')} that ${effect}`)
-      return containsMeaning(output, fused)
+      const fusedRaw = `${previousAction.trim().replace(/[.!?]+$/, '')} that ${effect}`
+      return containsMeaning(output, fusedRaw) || containsMeaning(output, compactInstruction(fusedRaw))
     }
 
     if (!/^(?:this|that|this one|that one)$/i.test(target)) {
@@ -51,8 +51,8 @@ const containsBehaviorAction = (
   const exactContents = contents?.[1]
   if (exactContents) {
     if (!previousAction || !/\bsection\b/i.test(previousAction)) return false
-    const fused = compactInstruction(`${previousAction.trim().replace(/[.!?]+$/, '')} containing exactly ${exactContents}`)
-    return containsMeaning(output, fused)
+    const fusedRaw = `${previousAction.trim().replace(/[.!?]+$/, '')} containing exactly ${exactContents}`
+    return containsMeaning(output, fusedRaw) || containsMeaning(output, compactInstruction(fusedRaw))
   }
 
   const titleDetail = clean.match(/^Show\s+(.+?)\s+near\s+the\s+(.+?)\s+title$/i)
