@@ -31,12 +31,12 @@ describe('extractSemantics', () => {
 
   it('keeps positive behavior containing without out of the boundary bucket', () => {
     const draft = extractSemantics(makeInput(
-      'Build a reading tracker. Pressing Quick Add opens a compact sheet for saving a book without leaving the current view.'
+      'Build a reading tracker. Pressing Retry resubmits the request without clearing the entered values.'
     ))
 
-    expect(draft.boundaries.join(' ')).not.toMatch(/Quick Add/i)
-    expect([...draft.behaviorUnits, ...draft.unresolved].join(' ')).toMatch(/Quick Add opens a compact sheet/i)
-    expect([...draft.behaviorUnits, ...draft.unresolved].join(' ')).toMatch(/without leaving the current view/i)
+    expect(draft.boundaries.join(' ')).not.toMatch(/Retry/i)
+    expect([...draft.behaviorUnits, ...draft.unresolved].join(' ')).toMatch(/Retry resubmits the request/i)
+    expect([...draft.behaviorUnits, ...draft.unresolved].join(' ')).toMatch(/without clearing the entered values/i)
   })
 
   it('does not invent a workflow when none is present', () => {
