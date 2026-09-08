@@ -48,6 +48,18 @@ describe('extractSemantics', () => {
     expect(draft.visualDirection.join(' ')).not.toMatch(/Pressing Edit/i)
   })
 
+  it('keeps ui action introductions beside their pressing behavior', () => {
+    const draft = extractSemantics(makeInput(
+      'Build a reading tracker. Library starts with an Add Book button. Pressing Add Book turns the page into title and author search.'
+    ))
+
+    expect(draft.behaviorUnits).toEqual([
+      'Library starts with an Add Book button.',
+      'Pressing Add Book turns the page into title and author search.',
+    ])
+    expect(draft.unresolved.join(' ')).not.toMatch(/Add Book button/i)
+  })
+
   it('does not invent a workflow when none is present', () => {
     const draft = extractSemantics(makeInput(
       'Build a grocery list app for one person. It should save items locally and feel calm and minimal.'
