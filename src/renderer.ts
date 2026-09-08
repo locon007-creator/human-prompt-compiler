@@ -37,10 +37,26 @@ const renderPlatform = (platform: string): string => {
   return `${article} ${normalized}`
 }
 
+const hasStandaloneHtmlDelivery = (spec: Readonly<PreparedSpec>): boolean =>
+  spec.buildRequirements.some((requirement) =>
+    /(?:self-contained\s+index\.html|single[-\s]?file\s+html|standalone\s+html)/i.test(requirement)
+  )
+
+const renderExperience = (spec: Readonly<PreparedSpec>): string => {
+  if (!spec.platform) return ''
+
+  if (hasStandaloneHtmlDelivery(spec)) {
+    if (/^android\s+app$/i.test(spec.platform)) return ' with an Android-style mobile experience'
+    if (/^ios\s+app$/i.test(spec.platform)) return ' with an iOS-style mobile experience'
+  }
+
+  return ` as ${renderPlatform(spec.platform)}`
+}
+
 const renderMission = (spec: Readonly<PreparedSpec>): string => {
   const audience = spec.targetUser ? ` for ${spec.targetUser}` : ''
-  const platform = spec.platform ? ` as ${renderPlatform(spec.platform)}` : ''
-  return sentence(`Build ${spec.product}${audience}${platform}. Its one job is to ${spec.primaryJob}`)
+  const experience = renderExperience(spec)
+  return sentence(`Build ${spec.product}${audience}${experience}. Its one job is to ${spec.primaryJob}`)
 }
 
 export const renderPrompt = (spec: Readonly<PreparedSpec>): string => {
