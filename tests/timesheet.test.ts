@@ -49,8 +49,8 @@ describe('Personal Timesheet complexity benchmark', () => {
     expect(result.prompt).toMatch(/12-hour or 24-hour/i)
     expect(result.prompt).toMatch(/recalculate/i)
     expect(result.prompt).toMatch(/one self-contained index\.html only/i)
-    expect(result.prompt).toMatch(/Do not use React, Vite, npm, JSX/i)
-    expect(result.prompt).toMatch(/Do not draw or simulate a phone/i)
+    expect(result.prompt).toMatch(/No React, Vite, npm, JSX/i)
+    expect(result.prompt).toMatch(/No simulated device chrome/i)
     expect(result.prompt).not.toMatch(/fleet|dispatch|recipe|payday|variable bill/i)
 
     console.log('\n--- COMPLEX TIMESHEET COMPILED PROMPT ---\n')
