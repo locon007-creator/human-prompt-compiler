@@ -32,10 +32,11 @@ describe('renderPrompt', () => {
     expect(output.match(/You are a senior/g)?.length).toBe(1)
   })
 
-  it('states product and one job before workflow details', () => {
+  it('states product and one job before workflow details in compact briefing language', () => {
     const output = renderPrompt(createPreparedSpec(makeDraft()))
     expect(output.indexOf('personal timesheet')).toBeLessThan(output.indexOf('Home → Punch In'))
-    expect(output).toMatch(/one job is to record work start and end times/i)
+    expect(output).toMatch(/One job: record work start and end times/i)
+    expect(output).toMatch(/Flow: Home → Punch In → Active Shift → Punch Out → Saved Day/i)
   })
 
   it('renders each BehaviorRule as a complete natural paragraph', () => {
@@ -77,7 +78,7 @@ describe('renderPrompt', () => {
       primaryViews: ['Home', 'Weekly', 'Monthly', 'History', 'Settings'],
     })))
 
-    expect(output).toMatch(/primary views: Home, Weekly, Monthly, History, and Settings/i)
+    expect(output).toMatch(/Primary views: Home, Weekly, Monthly, History, and Settings/i)
     expect(output).toMatch(/persistent navigation between Home, Weekly, Monthly, History, and Settings/i)
   })
 
@@ -104,7 +105,7 @@ describe('renderPrompt', () => {
     )
 
     expect(structureParagraphs).toHaveLength(1)
-    expect(structureParagraphs[0]).toMatch(/Home, Weekly, Monthly, History, and Settings/i)
+    expect(structureParagraphs[0]).toMatch(/Primary views: Home, Weekly, Monthly, History, and Settings/i)
     expect(structureParagraphs[0]).toMatch(/bottom navigation/i)
     expect(structureParagraphs[0]).toMatch(/top-right menu/i)
   })
@@ -126,13 +127,12 @@ describe('renderPrompt', () => {
       ],
     })))
 
-    expect(output).toMatch(/Appointments starts with an Add Appointment action that opens provider and service search\./i)
+    expect(output).toMatch(/Appointments: Add Appointment opens provider and service search\./i)
     expect(output).not.toMatch(/Pressing Add Appointment opens provider and service search\./i)
 
     const paragraphs = output.split(/\n\n/)
     const reminderParagraph = paragraphs.find((paragraph) => /When reminder time arrives/i.test(paragraph))
     expect(reminderParagraph).toBeTruthy()
-    expect(reminderParagraph).not.toMatch(/Appointments starts with/i)
   })
 
   it('fuses named turn interactions without repeating the control name', () => {
@@ -148,7 +148,7 @@ describe('renderPrompt', () => {
       ],
     })))
 
-    expect(output).toMatch(/Library starts with an Add Book button that turns the page into title and author search\./i)
+    expect(output).toMatch(/Library: Add Book turns the page into title and author search\./i)
     expect(output).not.toMatch(/Pressing Add Book turns/i)
   })
 
@@ -183,7 +183,7 @@ describe('renderPrompt', () => {
       ],
     })))
 
-    expect(output).toMatch(/Include an Edit Appointment button at top-right that opens a compact edit sheet\./i)
+    expect(output).toMatch(/Edit Appointment \(top-right\) opens a compact edit sheet\./i)
     expect(output).not.toMatch(/Pressing it opens/i)
   })
 
@@ -200,7 +200,7 @@ describe('renderPrompt', () => {
       ],
     })))
 
-    expect(output).toMatch(/Attach one collapsible Book Details section directly to the active card containing exactly Title, Author, Progress, and Notes\./i)
+    expect(output).toMatch(/Attach collapsible Book Details to the active card: Title, Author, Progress, and Notes\./i)
     expect(output).not.toMatch(/It contains exactly/i)
   })
 
