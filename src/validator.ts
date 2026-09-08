@@ -146,7 +146,7 @@ const assertRelationships = (spec: Readonly<PreparedSpec>, output: string): void
     const previousAction = spec.criticalBehavior[index - 1]?.action
     const nextAction = spec.criticalBehavior[index + 1]?.action
     if (!containsBehaviorAction(output, rule.action, previousAction, nextAction)) {
-      throw new Error('critical behavior coverage failed')
+      throw new Error(`critical behavior coverage failed: ${rule.action}`)
     }
 
     for (const result of rule.result ?? []) {
