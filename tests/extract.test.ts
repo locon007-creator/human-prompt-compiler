@@ -119,11 +119,23 @@ describe('extractSemantics', () => {
     expect(requirement).toMatch(/one self-contained index\.html/i)
     expect(requirement).toMatch(/inline css/i)
     expect(requirement).toMatch(/inline javascript/i)
-    expect(requirement).toMatch(/do not use react/i)
-    expect(requirement).toMatch(/vite/i)
-    expect(requirement).toMatch(/npm/i)
-    expect(requirement).toMatch(/jsx/i)
-    expect(requirement).toMatch(/extra source files/i)
+    expect(requirement).toMatch(/no frameworks or extra files/i)
+  })
+
+  it('keeps the Arena delivery contract compact', () => {
+    const input = snapshotInput({
+      idea: 'Build a personal finance assistant.',
+      buildType: 'Android App',
+      creationFormat: 'Single-file HTML',
+      visualStyle: 'Premium Modern',
+    })
+
+    const requirement = extractSemantics(input).buildRequirements.join(' ')
+    const words = requirement.trim().split(/\s+/)
+
+    expect(words.length).toBeLessThanOrEqual(42)
+    expect(requirement).toMatch(/360–430 px/i)
+    expect(requirement).toMatch(/no simulated device chrome/i)
   })
 
   it('extracts primary persistent views separately from the workflow', () => {
@@ -165,12 +177,6 @@ describe('extractSemantics', () => {
     })
 
     const requirement = extractSemantics(input).buildRequirements.join(' ')
-    expect(requirement).toMatch(/do not draw or simulate/i)
-    expect(requirement).toMatch(/status bar/i)
-    expect(requirement).toMatch(/battery/i)
-    expect(requirement).toMatch(/wi-?fi/i)
-    expect(requirement).toMatch(/notch/i)
-    expect(requirement).toMatch(/bezel/i)
-    expect(requirement).toMatch(/device frame/i)
+    expect(requirement).toMatch(/no simulated device chrome/i)
   })
 })
