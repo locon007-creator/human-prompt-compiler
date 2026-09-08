@@ -39,6 +39,15 @@ describe('extractSemantics', () => {
     expect([...draft.behaviorUnits, ...draft.unresolved].join(' ')).toMatch(/without clearing the entered values/i)
   })
 
+  it('keeps interaction instructions in behavior even when they mention a sheet', () => {
+    const draft = extractSemantics(makeInput(
+      'Build an appointment planner. Pressing Edit opens a half-height bottom sheet for changing the appointment without leaving the active record.'
+    ))
+
+    expect(draft.behaviorUnits.join(' ')).toMatch(/Pressing Edit opens a half-height bottom sheet/i)
+    expect(draft.visualDirection.join(' ')).not.toMatch(/Pressing Edit/i)
+  })
+
   it('does not invent a workflow when none is present', () => {
     const draft = extractSemantics(makeInput(
       'Build a grocery list app for one person. It should save items locally and feel calm and minimal.'
