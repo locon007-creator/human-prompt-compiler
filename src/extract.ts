@@ -76,7 +76,7 @@ const extractTargetUser = (unit: string): string | null => {
 
 const isBoundary = (unit: string): boolean =>
   /^(?:no\b|never\b|do\s+not\b|without\b|exclude\b|remove\b)/i.test(unit) ||
-  /\bwithout\s+[^,.!?]+/i.test(unit)
+  /^keep\b.*\bwithout\b/i.test(unit)
 
 const isBuildRequirement = (unit: string): boolean =>
   /\b(?:single\s+index\.html|self-contained|inline\s+(?:css|js|javascript)|no\s+hmr|apk|directly\s+previewable|build\s+format)\b/i.test(unit)
