@@ -28,9 +28,18 @@ const renderRule = (rule: Readonly<BehaviorRule>): string => {
   return `${first} ${result}`
 }
 
+const renderPlatform = (platform: string): string => {
+  const normalized = platform.trim()
+  if (/^android\s+app$/i.test(normalized)) return 'an Android app'
+  if (/^ios\s+app$/i.test(normalized)) return 'an iOS app'
+  if (/^web\s+app$/i.test(normalized)) return 'a web app'
+  const article = /^[aeiou]/i.test(normalized) ? 'an' : 'a'
+  return `${article} ${normalized}`
+}
+
 const renderMission = (spec: Readonly<PreparedSpec>): string => {
   const audience = spec.targetUser ? ` for ${spec.targetUser}` : ''
-  const platform = spec.platform ? ` as a ${spec.platform}` : ''
+  const platform = spec.platform ? ` as ${renderPlatform(spec.platform)}` : ''
   return sentence(`Build ${spec.product}${audience}${platform}. Its one job is to ${spec.primaryJob}`)
 }
 
