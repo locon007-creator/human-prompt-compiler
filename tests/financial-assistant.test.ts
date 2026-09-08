@@ -61,6 +61,9 @@ describe('Personal Financial Assistant benchmark', () => {
     expect(delivery).toMatch(/npm/i)
     expect(delivery).toMatch(/jsx/i)
     expect(delivery).toMatch(/extra source files/i)
+    expect(delivery).toMatch(/do not draw or simulate/i)
+    expect(delivery).toMatch(/status bar/i)
+    expect(delivery).toMatch(/device frame/i)
 
     expect(result.prompt).toMatch(/^You are a senior Android product designer/i)
     expect(result.prompt).toMatch(/Android/i)
@@ -73,8 +76,9 @@ describe('Personal Financial Assistant benchmark', () => {
     expect(result.prompt).toMatch(/one self-contained index\.html/i)
     expect(result.prompt).toMatch(/do not use react/i)
     expect(result.prompt).toMatch(/vite/i)
+    expect(result.prompt).toMatch(/do not draw or simulate a phone/i)
+    expect(result.prompt).toMatch(/device frame/i)
     expect(result.prompt).not.toMatch(/Critical Behavior:|PreparedSpec/i)
-    expect(result.prompt).not.toMatch(/device frame|phone frame|mockup/i)
 
     console.log('\n--- FINANCIAL ASSISTANT COMPILED PROMPT ---\n')
     console.log(result.prompt)
