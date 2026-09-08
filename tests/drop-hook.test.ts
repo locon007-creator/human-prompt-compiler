@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { compile } from '../src/compiler.js'
+import { snapshotInput } from '../src/input.js'
+import { extractSemantics } from '../src/extract.js'
+import { applyCoreLaws } from '../src/laws.js'
+import { createPreparedSpec } from '../src/prepared-spec.js'
+import { renderPrompt } from '../src/renderer.js'
+import { validateCompile } from '../src/validator.js'
 
 const input = {
   idea: `Build Drop & Hook Assistant for one truck driver completing multiple drop-and-hook stops in one workday.
@@ -28,15 +33,29 @@ Do not add fleet management, dispatch tools, teams, driver management, in-app ma
 
 describe('Drop & Hook Assistant complexity benchmark', () => {
   it('preserves linear workflow, app structure, route editing, trailer continuity, persistence, boundaries, and Arena-safe delivery', () => {
-    const result = compile(input)
+    const snapshot = snapshotInput(input)
+    const semanticDraft = extractSemantics(snapshot)
+    const lawfulDraft = applyCoreLaws(semanticDraft, snapshot)
+    const spec = createPreparedSpec(lawfulDraft)
+    const prompt = renderPrompt(spec)
 
-    expect(result.spec.workflow).toEqual([
+    try {
+      validateCompile(snapshot, spec, prompt)
+    } catch (error) {
+      console.log('\n--- DROP & HOOK CRITICAL BEHAVIOR TRACE ---')
+      console.log(JSON.stringify(spec.criticalBehavior, null, 2))
+      console.log('\n--- DROP & HOOK RENDERED PROMPT BEFORE VALIDATION ---\n')
+      console.log(prompt)
+      console.log('\n--- END TRACE ---\n')
+      throw error
+    }
+
+    expect(spec.workflow).toEqual([
       'Home', 'Start My Day', 'Day Setup', 'Create Route', 'Start Route', 'Work Mode',
       'Day Complete', 'Navigate Home', 'Ending Mileage', 'Finish Day',
     ])
-    expect(result.spec.primaryViews).toEqual(['Home', 'Create Route', 'Work Mode', 'Saved Stops', 'Saved Routes'])
+    expect(spec.primaryViews).toEqual(['Home', 'Create Route', 'Work Mode', 'Saved Stops', 'Saved Routes'])
 
-    const prompt = result.prompt
     expect(prompt).toMatch(/^You are a senior Android product designer/i)
     expect(prompt).toMatch(/Do not use persistent bottom navigation/i)
     expect(prompt).toMatch(/Saved Routes/i)
@@ -62,9 +81,5 @@ describe('Drop & Hook Assistant complexity benchmark', () => {
     expect(prompt).toMatch(/Do not add fleet management/i)
     expect(prompt).toMatch(/in-app maps/i)
     expect(prompt).not.toMatch(/payday|variable bill|recipe|payroll processing/i)
-
-    console.log('\n--- COMPLEX DROP & HOOK COMPILED PROMPT ---\n')
-    console.log(prompt)
-    console.log('\n--- END COMPILED PROMPT ---\n')
   })
 })
