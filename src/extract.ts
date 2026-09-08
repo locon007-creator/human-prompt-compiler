@@ -105,7 +105,7 @@ const requirementFromCreationFormat = (creationFormat: string): string | undefin
     return undefined
   }
 
-  return 'Build one self-contained index.html with inline CSS and JavaScript; no frameworks or extra files. Render directly at 360–430 px mobile proportions with no simulated device chrome. It must open and run as HTML.'
+  return 'Build one self-contained index.html only with inline CSS and inline JavaScript. Do not use React, Vite, npm, JSX, frameworks, or extra files. Render directly at 360–430 px mobile proportions. Do not draw or simulate a phone or device chrome.'
 }
 
 export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft => {
