@@ -59,30 +59,12 @@ const renderMission = (spec: Readonly<PreparedSpec>): string => {
   return sentence(`Build ${spec.product}${audience}${experience}. Its one job is to ${spec.primaryJob}`)
 }
 
-const renderStructure = (spec: Readonly<PreparedSpec>): string[] => {
-  const paragraphs: string[] = []
-
-  if (spec.primaryViews.length) {
-    paragraphs.push(sentence(`Use these primary views: ${joinNatural(spec.primaryViews)}`))
-  }
-
-  if (spec.navigation.length) {
-    paragraphs.push(spec.navigation.map(sentence).join(' '))
-  } else if (spec.primaryViews.length > 1) {
-    paragraphs.push(sentence(`Provide clear persistent navigation between ${joinNatural(spec.primaryViews)}`))
-  }
-
-  return paragraphs
-}
-
 export const renderPrompt = (spec: Readonly<PreparedSpec>): string => {
   const paragraphs: string[] = [spec.role.trim(), renderMission(spec)]
 
   if (spec.workflow.length) {
     paragraphs.push(sentence(`Keep the main flow: ${spec.workflow.join(' → ')}`))
   }
-
-  paragraphs.push(...renderStructure(spec))
 
   for (const rule of spec.criticalBehavior) {
     const rendered = renderRule(rule)
