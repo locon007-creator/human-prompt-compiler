@@ -17,10 +17,9 @@ Save that variable bill amount only for the current cycle and immediately update
 Show Home with actual income received this month, upcoming and paid bills, remaining expected expenses, current money remaining, next payday, and only the unanswered money questions that currently need attention.
 Persist saved schedules, entered amounts, payment status, notification preferences, current-cycle answers, and history locally.
 Use a premium calm Android-style mobile interface with strong hierarchy, clean spacing, polished typography, thumb-friendly controls, bottom sheets, selectors, date pickers, subtle status states, and one obvious primary action per screen.
-Do not add investments, trading, business bookkeeping, payroll, teams, social features, spreadsheets, or accounting-heavy workflows.
-Build the first version as one self-contained index.html with inline CSS and JavaScript, with the screens, forms, sheets, state, timing, calculations, and reminders directly previewable.`,
-  buildType: 'App / Web App',
-  creationFormat: 'Android App',
+Do not add investments, trading, business bookkeeping, payroll, teams, social features, spreadsheets, or accounting-heavy workflows.`,
+  buildType: 'Android App',
+  creationFormat: 'Single-file HTML',
   visualStyle: 'Premium Modern',
 }
 
@@ -28,6 +27,7 @@ describe('Personal Financial Assistant benchmark', () => {
   it('preserves financial timing, persistence, scope, delivery, and human prompt quality', () => {
     const result = compile(financialAssistantInput)
 
+    expect(result.spec.platform).toBe('Android App')
     expect(result.spec.workflow).toEqual([
       'Welcome',
       'Income Setup',
@@ -52,18 +52,27 @@ describe('Personal Financial Assistant benchmark', () => {
     expect(behavior).toMatch(/current-cycle amount is still missing/i)
     expect(behavior).toMatch(/current cycle/i)
 
-    expect(result.spec.buildRequirements.join(' ')).toMatch(/self-contained index\.html/i)
-    expect(result.spec.buildRequirements.join(' ')).toMatch(/inline CSS and JavaScript/i)
+    const delivery = result.spec.buildRequirements.join(' ')
+    expect(delivery).toMatch(/one self-contained index\.html/i)
+    expect(delivery).toMatch(/inline css/i)
+    expect(delivery).toMatch(/inline javascript/i)
+    expect(delivery).toMatch(/do not use react/i)
+    expect(delivery).toMatch(/vite/i)
+    expect(delivery).toMatch(/npm/i)
+    expect(delivery).toMatch(/jsx/i)
+    expect(delivery).toMatch(/extra source files/i)
 
     expect(result.prompt).toMatch(/^You are a senior Android product designer/i)
-    expect(result.prompt).toMatch(/Build Personal Financial Assistant for one person as an Android app\./)
+    expect(result.prompt).toMatch(/Android/i)
+    expect(result.prompt).not.toMatch(/as an Android app/i)
     expect(result.prompt).toMatch(/Welcome → Income Setup → Bills Setup → Setup Complete → Home/)
     expect(result.prompt).toMatch(/evening before payday after 6 PM/i)
     expect(result.prompt).toMatch(/current pay period/i)
     expect(result.prompt).toMatch(/variable bill is due/i)
     expect(result.prompt).toMatch(/current cycle/i)
-    expect(result.prompt).toMatch(/self-contained index\.html/i)
-    expect(result.prompt).toMatch(/inline CSS and JavaScript/i)
+    expect(result.prompt).toMatch(/one self-contained index\.html/i)
+    expect(result.prompt).toMatch(/do not use react/i)
+    expect(result.prompt).toMatch(/vite/i)
     expect(result.prompt).not.toMatch(/Critical Behavior:|PreparedSpec/i)
     expect(result.prompt).not.toMatch(/device frame|phone frame|mockup/i)
 
