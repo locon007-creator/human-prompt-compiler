@@ -25,7 +25,7 @@ Build the first version as one self-contained index.html with inline CSS and Jav
 }
 
 describe('Personal Financial Assistant benchmark', () => {
-  it('preserves financial timing, persistence, scope, and human prompt quality', () => {
+  it('preserves financial timing, persistence, scope, delivery, and human prompt quality', () => {
     const result = compile(financialAssistantInput)
 
     expect(result.spec.workflow).toEqual([
@@ -52,12 +52,18 @@ describe('Personal Financial Assistant benchmark', () => {
     expect(behavior).toMatch(/current-cycle amount is still missing/i)
     expect(behavior).toMatch(/current cycle/i)
 
+    expect(result.spec.buildRequirements.join(' ')).toMatch(/self-contained index\.html/i)
+    expect(result.spec.buildRequirements.join(' ')).toMatch(/inline CSS and JavaScript/i)
+
     expect(result.prompt).toMatch(/^You are a senior Android product designer/i)
+    expect(result.prompt).toMatch(/Build Personal Financial Assistant for one person as an Android app\./)
     expect(result.prompt).toMatch(/Welcome → Income Setup → Bills Setup → Setup Complete → Home/)
     expect(result.prompt).toMatch(/evening before payday after 6 PM/i)
     expect(result.prompt).toMatch(/current pay period/i)
     expect(result.prompt).toMatch(/variable bill is due/i)
     expect(result.prompt).toMatch(/current cycle/i)
+    expect(result.prompt).toMatch(/self-contained index\.html/i)
+    expect(result.prompt).toMatch(/inline CSS and JavaScript/i)
     expect(result.prompt).not.toMatch(/Critical Behavior:|PreparedSpec/i)
     expect(result.prompt).not.toMatch(/device frame|phone frame|mockup/i)
 
