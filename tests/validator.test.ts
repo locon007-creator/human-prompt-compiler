@@ -169,4 +169,17 @@ describe('validateCompile', () => {
     expect(() => validateCompile(input, spec, compressed)).not.toThrow()
     expect(() => validateCompile(input, spec, compressed.replace('Reading Now', 'Different Label'))).toThrow(/behavior|critical/i)
   })
+
+  it('accepts compact spatial screen-title fusion only when placement and label survive', () => {
+    const spec = compressedSpec([
+      { action: 'Visit Mode shows the current business name at top-left, address underneath, Check In at top-right, and arrival and departure times below' },
+      { action: 'Show Active Visit near the Visit Mode title' },
+    ])
+    const compressed = compressedOutput(
+      'Visit Mode: business top-left, address below; Check In top-right; arrival/departure below; Active Visit near title.'
+    )
+
+    expect(() => validateCompile(input, spec, compressed)).not.toThrow()
+    expect(() => validateCompile(input, spec, compressed.replace('Active Visit', 'Different Label'))).toThrow(/behavior|critical/i)
+  })
 })
