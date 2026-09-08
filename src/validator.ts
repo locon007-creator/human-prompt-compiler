@@ -1,6 +1,6 @@
 import type { InputSnapshot } from './input.js'
 import type { PreparedSpec } from './prepared-spec.js'
-import { compactInstruction, compactTrigger, compactVisual } from './briefing.js'
+import { compactBoundary, compactInstruction, compactTrigger, compactVisual } from './briefing.js'
 
 const normalize = (value: string): string => value
   .toLowerCase()
@@ -150,7 +150,9 @@ const assertRelationships = (spec: Readonly<PreparedSpec>, output: string): void
 
 const assertBoundaries = (spec: Readonly<PreparedSpec>, output: string): void => {
   for (const boundary of spec.boundaries) {
-    if (!containsMeaning(output, boundary)) throw new Error('boundary or scope constraint was altered')
+    if (!containsMeaning(output, boundary) && !containsMeaning(output, compactBoundary(boundary))) {
+      throw new Error('boundary or scope constraint was altered')
+    }
   }
 }
 
