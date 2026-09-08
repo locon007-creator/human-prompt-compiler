@@ -67,11 +67,23 @@ const deduplicate = (items: string[]): string[] => {
   return kept
 }
 
+const orderedFunctionalUnits = (draft: SemanticDraft): string[] => {
+  const candidates = [...draft.behaviorUnits, ...draft.unresolved]
+  if (!draft.sourceUnits.length) return deduplicate(candidates)
+
+  const candidateKeys = new Set(candidates.map(normalizeForComparison))
+  const ordered = draft.sourceUnits.filter((unit) => candidateKeys.has(normalizeForComparison(unit)))
+  const orderedKeys = new Set(ordered.map(normalizeForComparison))
+  const remaining = candidates.filter((unit) => !orderedKeys.has(normalizeForComparison(unit)))
+
+  return deduplicate([...ordered, ...remaining])
+}
+
 export const applyCoreLaws = (
   draft: SemanticDraft,
   input: Readonly<InputSnapshot>,
 ): LawfulDraft => {
-  const behaviorUnits = deduplicate([...draft.behaviorUnits, ...draft.unresolved])
+  const behaviorUnits = orderedFunctionalUnits(draft)
 
   const result: LawfulDraft = {
     role: roleFor(input),
