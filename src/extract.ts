@@ -43,8 +43,11 @@ const extractPrimaryViews = (unit: string): string[] | null => {
 }
 
 const extractNavigation = (unit: string): string | null => {
-  const match = unit.match(/^navigation\s*:\s*(.+)$/i)
-  return match?.[1] ? stripEnd(match[1]) : null
+  const labeled = unit.match(/^navigation\s*:\s*(.+)$/i)
+  if (labeled?.[1]) return stripEnd(labeled[1])
+
+  const appNavigationPattern = /\b(?:persistent\s+)?bottom\s+navigation\b|\bbottom\s+(?:nav|tabs?)\b|\btab\s+bar\b|\bnavigation\s+(?:bar|drawer)\b|\bhamburger\s+menu\b|\btop-right\s+menu\b|\bsidebar\b/i
+  return appNavigationPattern.test(unit) ? stripEnd(unit) : null
 }
 
 const extractPrimaryJob = (unit: string): string | null => {
