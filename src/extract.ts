@@ -6,8 +6,8 @@ export type SemanticDraft = {
   targetUser?: string
   platform?: string
   workflow: string[]
-  primaryViews?: string[]
-  navigation?: string[]
+  primaryViews: string[]
+  navigation: string[]
   behaviorUnits: string[]
   visualDirection: string[]
   boundaries: string[]
