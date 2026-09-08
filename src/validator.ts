@@ -12,6 +12,19 @@ const containsMeaning = (output: string, value: string): boolean => {
   return Boolean(target) && normalize(output).includes(target)
 }
 
+const containsBehaviorAction = (output: string, action: string): boolean => {
+  if (containsMeaning(output, action)) return true
+
+  const clean = action.trim().replace(/[.!?]+$/, '')
+  const match = clean.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
+  if (!match?.[1] || !match[2] || !match[3]) return false
+
+  const target = match[1].trim()
+  if (/^(?:it|this|that|this one|that one)$/i.test(target)) return false
+
+  return containsMeaning(output, target) && containsMeaning(output, `${match[2]} ${match[3]}`)
+}
+
 const paragraphs = (output: string): string[] => output
   .split(/\n\s*\n/)
   .map((part) => part.trim())
@@ -39,7 +52,7 @@ const assertRelationships = (spec: Readonly<PreparedSpec>, output: string): void
     if (/\boptional\b|\bmay\b/i.test(rule.action) && !containsMeaning(output, rule.action)) {
       throw new Error('optional behavior was altered')
     }
-    if (!containsMeaning(output, rule.action)) throw new Error('critical behavior coverage failed')
+    if (!containsBehaviorAction(output, rule.action)) throw new Error('critical behavior coverage failed')
     for (const result of rule.result ?? []) {
       if (!containsMeaning(output, result)) throw new Error('behavior result was lost')
     }
