@@ -12,17 +12,49 @@ const containsMeaning = (output: string, value: string): boolean => {
   return Boolean(target) && normalize(output).includes(target)
 }
 
-const containsBehaviorAction = (output: string, action: string): boolean => {
+const isControlIntroduction = (action: string): boolean =>
+  /^(?:include|add|place|use)\b.*\b(?:button|action|control|selector|field)\b/i.test(action.trim())
+
+const containsBehaviorAction = (
+  output: string,
+  action: string,
+  previousAction?: string,
+): boolean => {
   if (containsMeaning(output, action)) return true
 
   const clean = action.trim().replace(/[.!?]+$/, '')
-  const match = clean.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
-  if (!match?.[1] || !match[2] || !match[3]) return false
 
-  const target = match[1].trim()
-  if (/^(?:it|this|that|this one|that one)$/i.test(target)) return false
+  const pressing = clean.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
+  if (pressing?.[1] && pressing[2] && pressing[3]) {
+    const target = pressing[1].trim()
+    const effect = `${pressing[2]} ${pressing[3]}`
 
-  return containsMeaning(output, target) && containsMeaning(output, `${match[2]} ${match[3]}`)
+    if (/^it$/i.test(target)) {
+      return Boolean(previousAction) && isControlIntroduction(previousAction) &&
+        containsMeaning(output, previousAction) && containsMeaning(output, effect)
+    }
+
+    if (!/^(?:this|that|this one|that one)$/i.test(target)) {
+      return containsMeaning(output, target) && containsMeaning(output, effect)
+    }
+  }
+
+  const contents = clean.match(/^It\s+contains\s+exactly\s+(.+)$/i)
+  if (contents?.[1]) {
+    return Boolean(previousAction) && /\bsection\b/i.test(previousAction) &&
+      containsMeaning(output, previousAction) && containsMeaning(output, `containing exactly ${contents[1]}`)
+  }
+
+  const titleDetail = clean.match(/^Show\s+(.+?)\s+near\s+the\s+(.+?)\s+title$/i)
+  if (titleDetail?.[1] && titleDetail[2] && previousAction) {
+    const previousScreen = previousAction.trim().match(/^(.+?)\s+shows\s+(.+)$/i)
+    if (previousScreen?.[1] && normalize(previousScreen[1]) === normalize(titleDetail[2])) {
+      return containsMeaning(output, previousAction) &&
+        containsMeaning(output, `${titleDetail[1]} near the title`)
+    }
+  }
+
+  return false
 }
 
 const paragraphs = (output: string): string[] => output
@@ -42,7 +74,10 @@ const assertWorkflow = (spec: Readonly<PreparedSpec>, output: string): void => {
 }
 
 const assertRelationships = (spec: Readonly<PreparedSpec>, output: string): void => {
-  for (const rule of spec.criticalBehavior) {
+  for (let index = 0; index < spec.criticalBehavior.length; index += 1) {
+    const rule = spec.criticalBehavior[index]
+    if (!rule) continue
+
     if (rule.trigger && !containsMeaning(output, rule.trigger)) {
       throw new Error('timing or trigger was altered')
     }
@@ -52,7 +87,12 @@ const assertRelationships = (spec: Readonly<PreparedSpec>, output: string): void
     if (/\boptional\b|\bmay\b/i.test(rule.action) && !containsMeaning(output, rule.action)) {
       throw new Error('optional behavior was altered')
     }
-    if (!containsBehaviorAction(output, rule.action)) throw new Error('critical behavior coverage failed')
+
+    const previousAction = spec.criticalBehavior[index - 1]?.action
+    if (!containsBehaviorAction(output, rule.action, previousAction)) {
+      throw new Error('critical behavior coverage failed')
+    }
+
     for (const result of rule.result ?? []) {
       if (!containsMeaning(output, result)) throw new Error('behavior result was lost')
     }
