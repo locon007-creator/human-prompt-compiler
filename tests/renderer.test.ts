@@ -134,4 +134,22 @@ describe('renderPrompt', () => {
     expect(reminderParagraph).toBeTruthy()
     expect(reminderParagraph).not.toMatch(/Appointments starts with/i)
   })
+
+  it('never guesses an ambiguous pressing pronoun from a substring match', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      product: 'reading tracker',
+      primaryJob: 'track books and reading progress',
+      workflow: [],
+      primaryViews: [],
+      navigation: [],
+      criticalBehavior: [
+        { action: 'Show Current List near the page title' },
+        { action: 'Pressing it opens a compact edit panel' },
+      ],
+    })))
+
+    expect(output).toMatch(/Show Current List near the page title\./i)
+    expect(output).toMatch(/Pressing it opens a compact edit panel\./i)
+    expect(output).not.toMatch(/page title that opens a compact edit panel/i)
+  })
 })
