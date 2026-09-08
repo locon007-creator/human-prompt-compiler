@@ -169,4 +169,55 @@ describe('renderPrompt', () => {
     expect(output).toMatch(/Pressing it opens a compact edit panel\./i)
     expect(output).not.toMatch(/page title that opens a compact edit panel/i)
   })
+
+  it('safely fuses an immediate button introduction with Pressing it', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      product: 'appointment planner',
+      primaryJob: 'manage personal appointments',
+      workflow: [],
+      primaryViews: [],
+      navigation: [],
+      criticalBehavior: [
+        { action: 'Include an Edit Appointment button at top-right' },
+        { action: 'Pressing it opens a compact edit sheet' },
+      ],
+    })))
+
+    expect(output).toMatch(/Include an Edit Appointment button at top-right that opens a compact edit sheet\./i)
+    expect(output).not.toMatch(/Pressing it opens/i)
+  })
+
+  it('fuses an attached section with its exact contents', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      product: 'reading tracker',
+      primaryJob: 'track reading progress',
+      workflow: [],
+      primaryViews: [],
+      navigation: [],
+      criticalBehavior: [
+        { action: 'Attach one collapsible Book Details section directly to the active card' },
+        { action: 'It contains exactly Title, Author, Progress, and Notes' },
+      ],
+    })))
+
+    expect(output).toMatch(/Attach one collapsible Book Details section directly to the active card containing exactly Title, Author, Progress, and Notes\./i)
+    expect(output).not.toMatch(/It contains exactly/i)
+  })
+
+  it('fuses a screen description with a nearby title detail', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      product: 'reading tracker',
+      primaryJob: 'track reading progress',
+      workflow: [],
+      primaryViews: [],
+      navigation: [],
+      criticalBehavior: [
+        { action: 'Library shows the current book, progress, and last-read date' },
+        { action: 'Show Reading Now near the Library title' },
+      ],
+    })))
+
+    expect(output).toMatch(/Library shows the current book, progress, and last-read date, with Reading Now near the title\./i)
+    expect(output).not.toMatch(/Show Reading Now near the Library title\./i)
+  })
 })
