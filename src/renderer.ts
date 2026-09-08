@@ -1,6 +1,6 @@
 import type { PreparedSpec } from './prepared-spec.js'
 import type { BehaviorRule } from './relationships.js'
-import { compactInstruction, compactTrigger, compactVisual } from './briefing.js'
+import { compactBoundary, compactInstruction, compactTrigger, compactVisual } from './briefing.js'
 
 const sentence = (value: string): string => {
   const clean = value.trim().replace(/[.!?]+$/, '')
@@ -223,7 +223,7 @@ export const renderPrompt = (spec: Readonly<PreparedSpec>): string => {
   }
 
   if (spec.boundaries.length) {
-    paragraphs.push(spec.boundaries.map(sentence).join(' '))
+    paragraphs.push(spec.boundaries.map((value) => sentence(compactBoundary(value))).join(' '))
   }
 
   if (spec.buildRequirements.length) {
