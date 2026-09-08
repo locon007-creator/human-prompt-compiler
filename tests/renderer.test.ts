@@ -91,4 +91,21 @@ describe('renderPrompt', () => {
     expect(output).toMatch(/Settings in the top-right menu/i)
     expect(output).not.toMatch(/persistent navigation between Home, Weekly, Monthly, History, and Settings/i)
   })
+
+  it('compresses primary views and explicit navigation into one human structure paragraph', () => {
+    const output = renderPrompt(createPreparedSpec(makeDraft({
+      primaryViews: ['Home', 'Weekly', 'Monthly', 'History', 'Settings'],
+      navigation: ['Use persistent bottom navigation for Home, Weekly, Monthly, and History, with Settings available from the top-right menu.'],
+    })))
+
+    const paragraphs = output.split(/\n\n/)
+    const structureParagraphs = paragraphs.filter((paragraph) =>
+      /Home, Weekly, Monthly, History/i.test(paragraph) || /bottom navigation/i.test(paragraph)
+    )
+
+    expect(structureParagraphs).toHaveLength(1)
+    expect(structureParagraphs[0]).toMatch(/Home, Weekly, Monthly, History, and Settings/i)
+    expect(structureParagraphs[0]).toMatch(/bottom navigation/i)
+    expect(structureParagraphs[0]).toMatch(/top-right menu/i)
+  })
 })
