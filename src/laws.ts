@@ -79,6 +79,26 @@ const orderedFunctionalUnits = (draft: SemanticDraft): string[] => {
   return deduplicate([...ordered, ...remaining])
 }
 
+const visualDirectionsFor = (
+  draft: SemanticDraft,
+  input: Readonly<InputSnapshot>,
+): string[] => {
+  const directions = deduplicate(draft.visualDirection)
+  if (!/\bpremium\b/i.test(input.visualStyle)) return directions
+
+  const premiumFinish = 'make the first screen feel like a finished premium product, not a prototype, through purposeful composition, refined surfaces, restrained depth, and polished visual details'
+
+  if (!directions.length) {
+    return [`Use a refined premium visual system and ${premiumFinish}.`]
+  }
+
+  const preserved = directions
+    .map((direction) => direction.trim().replace(/[.!?]+$/, ''))
+    .join('; ')
+
+  return [`${preserved}; ${premiumFinish}.`]
+}
+
 export const applyCoreLaws = (
   draft: SemanticDraft,
   input: Readonly<InputSnapshot>,
@@ -93,7 +113,7 @@ export const applyCoreLaws = (
     primaryViews: deduplicate(draft.primaryViews ?? []),
     navigation: deduplicate(draft.navigation ?? []),
     criticalBehavior: groupBehaviorUnits(behaviorUnits),
-    visualDirection: deduplicate(draft.visualDirection),
+    visualDirection: visualDirectionsFor(draft, input),
     boundaries: deduplicate(draft.boundaries),
     buildRequirements: deduplicate(draft.buildRequirements),
   }
