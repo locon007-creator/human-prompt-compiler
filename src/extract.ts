@@ -6,6 +6,8 @@ export type SemanticDraft = {
   targetUser?: string
   platform?: string
   workflow: string[]
+  primaryViews?: string[]
+  navigation?: string[]
   behaviorUnits: string[]
   visualDirection: string[]
   boundaries: string[]
@@ -29,6 +31,20 @@ const extractWorkflow = (unit: string): string[] | null => {
     .split('→')
     .map(stripEnd)
     .filter(Boolean)
+}
+
+const extractPrimaryViews = (unit: string): string[] | null => {
+  const match = unit.match(/(?:primary|main|persistent)\s+(?:views|screens)\s*:\s*(.+)$/i)
+  if (!match?.[1]) return null
+  return match[1]
+    .split(/\s*[,|]\s*/)
+    .map(stripEnd)
+    .filter(Boolean)
+}
+
+const extractNavigation = (unit: string): string | null => {
+  const match = unit.match(/^navigation\s*:\s*(.+)$/i)
+  return match?.[1] ? stripEnd(match[1]) : null
 }
 
 const extractPrimaryJob = (unit: string): string | null => {
@@ -81,12 +97,14 @@ const requirementFromCreationFormat = (creationFormat: string): string | undefin
     return undefined
   }
 
-  return 'Build this as one self-contained index.html only, with inline CSS and inline JavaScript. Do not use React, Vite, npm, JSX, external frameworks, or extra source files. It must open and run directly as HTML.'
+  return 'Build this as one self-contained index.html only, with inline CSS and inline JavaScript. Do not use React, Vite, npm, JSX, external frameworks, or extra source files. Render the app directly in the browser canvas at 360–430 px mobile proportions. Do not draw or simulate a phone, iPhone, Android device shell, operating-system status bar, battery, Wi-Fi, clock, notch, bezel, system navigation bar, or device frame. It must open and run directly as HTML.'
 }
 
 export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft => {
   const sourceUnits = splitSourceUnits(input.idea)
   const workflow: string[] = []
+  const primaryViews: string[] = []
+  const navigation: string[] = []
   const behaviorUnits: string[] = []
   const visualDirection: string[] = []
   const boundaries: string[] = []
@@ -109,6 +127,18 @@ export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft 
     const unitWorkflow = extractWorkflow(unit)
     if (unitWorkflow) {
       workflow.push(...unitWorkflow)
+      continue
+    }
+
+    const unitPrimaryViews = extractPrimaryViews(unit)
+    if (unitPrimaryViews) {
+      primaryViews.push(...unitPrimaryViews)
+      continue
+    }
+
+    const unitNavigation = extractNavigation(unit)
+    if (unitNavigation) {
+      navigation.push(unitNavigation)
       continue
     }
 
@@ -147,6 +177,8 @@ export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft 
     product,
     primaryJob,
     workflow,
+    primaryViews,
+    navigation,
     behaviorUnits,
     visualDirection,
     boundaries,
