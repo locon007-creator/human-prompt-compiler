@@ -45,6 +45,26 @@ Do not add GPS tracking.
 
 Build the first version as one self-contained index.html with inline CSS and JavaScript.`
 
+const compressedSpec = (criticalBehavior: { action: string }[]) => createPreparedSpec({
+  role: 'You are a senior Android product designer, mobile UI/UX specialist, and full-stack app engineer.',
+  product: 'reading tracker',
+  primaryJob: 'track books and reading progress',
+  platform: 'Android App',
+  workflow: [],
+  criticalBehavior,
+  visualDirection: ['Use premium Android hierarchy, spacing, typography, and thumb-friendly controls.'],
+  boundaries: [],
+  buildRequirements: [],
+})
+
+const compressedOutput = (behavior: string) => `You are a senior Android product designer, mobile UI/UX specialist, and full-stack app engineer.
+
+Build reading tracker. Its one job is to track books and reading progress.
+
+${behavior}
+
+Use premium Android hierarchy, spacing, typography, and thumb-friendly controls.`
+
 describe('validateCompile', () => {
   it('accepts a valid rendered prompt', () => {
     expect(() => validateCompile(input, makeSpec(), validOutput)).not.toThrow()
@@ -88,30 +108,54 @@ describe('validateCompile', () => {
   })
 
   it('accepts a compressed pressing instruction only when target and effect both survive', () => {
-    const spec = createPreparedSpec({
-      role: 'You are a senior Android product designer, mobile UI/UX specialist, and full-stack app engineer.',
-      product: 'reading tracker',
-      primaryJob: 'track books and reading progress',
-      platform: 'Android App',
-      workflow: [],
-      criticalBehavior: [
-        { action: 'Library starts with an Add Book button' },
-        { action: 'Pressing Add Book turns the page into title and author search' },
-      ],
-      visualDirection: ['Use premium Android hierarchy, spacing, typography, and thumb-friendly controls.'],
-      boundaries: [],
-      buildRequirements: [],
-    })
-
-    const compressed = `You are a senior Android product designer, mobile UI/UX specialist, and full-stack app engineer.
-
-Build reading tracker. Its one job is to track books and reading progress.
-
-Library starts with an Add Book button that turns the page into title and author search.
-
-Use premium Android hierarchy, spacing, typography, and thumb-friendly controls.`
+    const spec = compressedSpec([
+      { action: 'Library starts with an Add Book button' },
+      { action: 'Pressing Add Book turns the page into title and author search' },
+    ])
+    const compressed = compressedOutput(
+      'Library starts with an Add Book button that turns the page into title and author search.'
+    )
 
     expect(() => validateCompile(input, spec, compressed)).not.toThrow()
     expect(() => validateCompile(input, spec, compressed.replace('title and author search', 'a blank page'))).toThrow(/behavior|critical/i)
+  })
+
+  it('accepts safe immediate control pronoun compression only when the effect survives', () => {
+    const spec = compressedSpec([
+      { action: 'Include an Edit Book button at top-right' },
+      { action: 'Pressing it opens a compact edit sheet' },
+    ])
+    const compressed = compressedOutput(
+      'Include an Edit Book button at top-right that opens a compact edit sheet.'
+    )
+
+    expect(() => validateCompile(input, spec, compressed)).not.toThrow()
+    expect(() => validateCompile(input, spec, compressed.replace('opens a compact edit sheet', 'stays idle'))).toThrow(/behavior|critical/i)
+  })
+
+  it('accepts section-content compression only when the exact contents survive', () => {
+    const spec = compressedSpec([
+      { action: 'Attach one collapsible Book Details section directly to the active card' },
+      { action: 'It contains exactly Title, Author, Progress, and Notes' },
+    ])
+    const compressed = compressedOutput(
+      'Attach one collapsible Book Details section directly to the active card containing exactly Title, Author, Progress, and Notes.'
+    )
+
+    expect(() => validateCompile(input, spec, compressed)).not.toThrow()
+    expect(() => validateCompile(input, spec, compressed.replace(', Progress, and Notes', ''))).toThrow(/behavior|critical/i)
+  })
+
+  it('accepts screen-title compression only when the screen and detail both survive', () => {
+    const spec = compressedSpec([
+      { action: 'Library shows the current book, progress, and last-read date' },
+      { action: 'Show Reading Now near the Library title' },
+    ])
+    const compressed = compressedOutput(
+      'Library shows the current book, progress, and last-read date, with Reading Now near the title.'
+    )
+
+    expect(() => validateCompile(input, spec, compressed)).not.toThrow()
+    expect(() => validateCompile(input, spec, compressed.replace('Reading Now', 'Different Label'))).toThrow(/behavior|critical/i)
   })
 })
