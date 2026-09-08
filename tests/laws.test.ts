@@ -7,6 +7,8 @@ const baseDraft = (overrides: Partial<SemanticDraft> = {}): SemanticDraft => ({
   product: 'personal timesheet',
   primaryJob: 'record work start and end times',
   workflow: [],
+  primaryViews: [],
+  navigation: [],
   behaviorUnits: [],
   visualDirection: [],
   boundaries: [],
