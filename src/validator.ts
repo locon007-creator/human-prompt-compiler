@@ -1,5 +1,6 @@
 import type { InputSnapshot } from './input.js'
 import type { PreparedSpec } from './prepared-spec.js'
+import { compactInstruction, compactTrigger, compactVisual } from './briefing.js'
 
 const normalize = (value: string): string => value
   .toLowerCase()
@@ -12,6 +13,9 @@ const containsMeaning = (output: string, value: string): boolean => {
   return Boolean(target) && normalize(output).includes(target)
 }
 
+const containsOriginalOrCompact = (output: string, value: string): boolean =>
+  containsMeaning(output, value) || containsMeaning(output, compactInstruction(value))
+
 const isControlIntroduction = (action: string): boolean =>
   /^(?:include|add|place|use)\b.*\b(?:button|action|control|selector|field)\b/i.test(action.trim())
 
@@ -20,7 +24,7 @@ const containsBehaviorAction = (
   action: string,
   previousAction?: string,
 ): boolean => {
-  if (containsMeaning(output, action)) return true
+  if (containsOriginalOrCompact(output, action)) return true
 
   const clean = action.trim().replace(/[.!?]+$/, '')
 
@@ -33,9 +37,9 @@ const containsBehaviorAction = (
     const effect = `${pressingVerb} ${pressingRest}`
 
     if (/^it$/i.test(target)) {
-      if (!previousAction) return false
-      return isControlIntroduction(previousAction) &&
-        containsMeaning(output, previousAction) && containsMeaning(output, effect)
+      if (!previousAction || !isControlIntroduction(previousAction)) return false
+      const fused = compactInstruction(`${previousAction.trim().replace(/[.!?]+$/, '')} that ${effect}`)
+      return containsMeaning(output, fused)
     }
 
     if (!/^(?:this|that|this one|that one)$/i.test(target)) {
@@ -46,10 +50,9 @@ const containsBehaviorAction = (
   const contents = clean.match(/^It\s+contains\s+exactly\s+(.+)$/i)
   const exactContents = contents?.[1]
   if (exactContents) {
-    if (!previousAction) return false
-    return /\bsection\b/i.test(previousAction) &&
-      containsMeaning(output, previousAction) &&
-      containsMeaning(output, `containing exactly ${exactContents}`)
+    if (!previousAction || !/\bsection\b/i.test(previousAction)) return false
+    const fused = compactInstruction(`${previousAction.trim().replace(/[.!?]+$/, '')} containing exactly ${exactContents}`)
+    return containsMeaning(output, fused)
   }
 
   const titleDetail = clean.match(/^Show\s+(.+?)\s+near\s+the\s+(.+?)\s+title$/i)
@@ -88,13 +91,13 @@ const assertRelationships = (spec: Readonly<PreparedSpec>, output: string): void
     const rule = spec.criticalBehavior[index]
     if (!rule) continue
 
-    if (rule.trigger && !containsMeaning(output, rule.trigger)) {
+    if (rule.trigger && !containsMeaning(output, rule.trigger) && !containsMeaning(output, compactTrigger(rule.trigger))) {
       throw new Error('timing or trigger was altered')
     }
     for (const condition of rule.condition ?? []) {
       if (!containsMeaning(output, condition)) throw new Error('behavior condition was lost')
     }
-    if (/\boptional\b|\bmay\b/i.test(rule.action) && !containsMeaning(output, rule.action)) {
+    if (/\boptional\b|\bmay\b/i.test(rule.action) && !containsOriginalOrCompact(output, rule.action)) {
       throw new Error('optional behavior was altered')
     }
 
@@ -104,7 +107,7 @@ const assertRelationships = (spec: Readonly<PreparedSpec>, output: string): void
     }
 
     for (const result of rule.result ?? []) {
-      if (!containsMeaning(output, result)) throw new Error('behavior result was lost')
+      if (!containsOriginalOrCompact(output, result)) throw new Error('behavior result was lost')
     }
   }
 }
@@ -122,7 +125,9 @@ const assertVisualQuality = (
 ): void => {
   if (!/\bpremium\b/i.test(input.visualStyle)) return
   if (!spec.visualDirection.length) throw new Error('premium visual guidance is missing from spec')
-  const survived = spec.visualDirection.some((direction) => containsMeaning(output, direction))
+  const survived = spec.visualDirection.some((direction) =>
+    containsMeaning(output, direction) || containsMeaning(output, compactVisual(direction))
+  )
   if (!survived) throw new Error('premium visual guidance is missing from output')
 }
 
