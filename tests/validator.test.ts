@@ -86,4 +86,32 @@ describe('validateCompile', () => {
   it('rejects missing premium visual guidance for premium input', () => {
     expect(() => validateCompile(input, makeSpec(), validOutput.replace(/\n\nUse premium Android hierarchy[^\n]+/, ''))).toThrow(/visual|premium/i)
   })
+
+  it('accepts a compressed pressing instruction only when target and effect both survive', () => {
+    const spec = createPreparedSpec({
+      role: 'You are a senior Android product designer, mobile UI/UX specialist, and full-stack app engineer.',
+      product: 'reading tracker',
+      primaryJob: 'track books and reading progress',
+      platform: 'Android App',
+      workflow: [],
+      criticalBehavior: [
+        { action: 'Library starts with an Add Book button' },
+        { action: 'Pressing Add Book turns the page into title and author search' },
+      ],
+      visualDirection: ['Use premium Android hierarchy, spacing, typography, and thumb-friendly controls.'],
+      boundaries: [],
+      buildRequirements: [],
+    })
+
+    const compressed = `You are a senior Android product designer, mobile UI/UX specialist, and full-stack app engineer.
+
+Build reading tracker. Its one job is to track books and reading progress.
+
+Library starts with an Add Book button that turns the page into title and author search.
+
+Use premium Android hierarchy, spacing, typography, and thumb-friendly controls.`
+
+    expect(() => validateCompile(input, spec, compressed)).not.toThrow()
+    expect(() => validateCompile(input, spec, compressed.replace('title and author search', 'a blank page'))).toThrow(/behavior|critical/i)
+  })
 })
