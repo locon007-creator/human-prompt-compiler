@@ -49,6 +49,13 @@ const containsPairedIntroduction = (
     return containsMeaning(output, fused) || containsMeaning(output, compactInstruction(fused))
   }
 
+  const screen = current.match(/^(.+?)\s+shows\s+(.+)$/i)
+  const titleDetail = next.match(/^Show\s+(.+?)\s+near\s+the\s+(.+?)\s+title$/i)
+  if (screen?.[1] && titleDetail?.[1] && titleDetail[2] && normalize(screen[1]) === normalize(titleDetail[2])) {
+    const fused = `${current}, with ${titleDetail[1]} near the title`
+    return containsMeaning(output, fused) || containsMeaning(output, compactInstruction(fused))
+  }
+
   return false
 }
 
@@ -94,11 +101,11 @@ const containsBehaviorAction = (
   const detailText = titleDetail?.[1]
   const detailScreen = titleDetail?.[2]
   if (detailText && detailScreen && previousAction) {
-    const previousScreen = previousAction.trim().match(/^(.+?)\s+shows\s+(.+)$/i)
+    const previousScreen = previousAction.trim().replace(/[.!?]+$/, '').match(/^(.+?)\s+shows\s+(.+)$/i)
     const previousScreenName = previousScreen?.[1]
     if (previousScreenName && normalize(previousScreenName) === normalize(detailScreen)) {
-      return containsMeaning(output, previousAction) &&
-        containsMeaning(output, `${detailText} near the title`)
+      const fusedRaw = `${previousAction.trim().replace(/[.!?]+$/, '')}, with ${detailText} near the title`
+      return containsMeaning(output, fusedRaw) || containsMeaning(output, compactInstruction(fusedRaw))
     }
   }
 
