@@ -31,6 +31,18 @@ const renderRule = (rule: Readonly<BehaviorRule>): string => {
 const canFuseDirectAction = (rule: Readonly<BehaviorRule>): boolean =>
   !rule.trigger && !rule.condition?.length && !rule.result?.length
 
+const normalizePhrase = (value: string): string => value
+  .toLowerCase()
+  .replace(/[^a-z0-9\s]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim()
+
+const containsPhrase = (value: string, phrase: string): boolean => {
+  const haystack = ` ${normalizePhrase(value)} `
+  const needle = ` ${normalizePhrase(phrase)} `
+  return needle.trim().length > 0 && haystack.includes(needle)
+}
+
 const fusePressingPair = (
   first: Readonly<BehaviorRule>,
   second: Readonly<BehaviorRule>,
@@ -42,8 +54,10 @@ const fusePressingPair = (
   if (!match?.[1] || !match[2] || !match[3]) return null
 
   const target = match[1].trim()
+  if (/^(?:it|this|that|this one|that one)$/i.test(target)) return null
+
   const current = first.action.trim().replace(/[.!?]+$/, '')
-  if (!current.toLowerCase().includes(target.toLowerCase())) return null
+  if (!containsPhrase(current, target)) return null
 
   return sentence(`${current} that ${match[2].toLowerCase()} ${match[3]}`)
 }
