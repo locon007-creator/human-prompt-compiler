@@ -99,15 +99,17 @@ export const extractSemantics = (input: Readonly<InputSnapshot>): SemanticDraft 
       continue
     }
 
+    // Delivery/build-format instructions must own their sentence before the
+    // generic "Build ..." product detector sees it.
+    if (isBuildRequirement(unit)) {
+      buildRequirements.push(unit)
+      continue
+    }
+
     const unitProduct = extractProduct(unit)
     if (unitProduct) {
       if (!product) product = unitProduct
       targetUser ??= extractTargetUser(unit) ?? undefined
-      continue
-    }
-
-    if (isBuildRequirement(unit)) {
-      buildRequirements.push(unit)
       continue
     }
 
