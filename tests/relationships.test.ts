@@ -41,6 +41,8 @@ describe('freezePreparedSpec', () => {
       product: 'Product',
       primaryJob: 'Primary job',
       workflow: ['Home', 'Work'],
+      primaryViews: ['Home', 'History'],
+      navigation: ['Use persistent navigation between Home and History.'],
       criticalBehavior: [{
         trigger: 'When work starts',
         condition: ['the user is ready'],
@@ -56,6 +58,8 @@ describe('freezePreparedSpec', () => {
 
     expect(Object.isFrozen(frozen)).toBe(true)
     expect(Object.isFrozen(frozen.workflow)).toBe(true)
+    expect(Object.isFrozen(frozen.primaryViews)).toBe(true)
+    expect(Object.isFrozen(frozen.navigation)).toBe(true)
     expect(Object.isFrozen(frozen.criticalBehavior)).toBe(true)
     expect(Object.isFrozen(frozen.criticalBehavior[0])).toBe(true)
     expect(Object.isFrozen(frozen.criticalBehavior[0]?.condition)).toBe(true)
