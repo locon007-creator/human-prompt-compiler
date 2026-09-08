@@ -19,12 +19,47 @@ const containsOriginalOrCompact = (output: string, value: string): boolean =>
 const isControlIntroduction = (action: string): boolean =>
   /^(?:include|add|place|use)\b.*\b(?:button|action|control|selector|field)\b/i.test(action.trim())
 
+const containsPairedIntroduction = (
+  output: string,
+  action: string,
+  nextAction?: string,
+): boolean => {
+  if (!nextAction) return false
+  const current = action.trim().replace(/[.!?]+$/, '')
+  const next = nextAction.trim().replace(/[.!?]+$/, '')
+
+  const namedControl = next.match(/^Pressing\s+(.+?)\s+(opens?|shows?|starts?|saves?|adds?|creates?|reveals?|launches?|displays?|enables?|turns?)\s+(.+)$/i)
+  if (namedControl?.[1] && namedControl[2] && namedControl[3]) {
+    const target = namedControl[1].trim()
+    const effect = `${namedControl[2]} ${namedControl[3]}`
+    if (!/^(?:this|that|this one|that one)$/i.test(target)) {
+      if (/^it$/i.test(target)) {
+        if (!isControlIntroduction(current)) return false
+      } else if (!normalize(current).includes(normalize(target))) {
+        return false
+      }
+      const fused = `${current} that ${effect}`
+      return containsMeaning(output, fused) || containsMeaning(output, compactInstruction(fused))
+    }
+  }
+
+  const contents = next.match(/^It\s+contains\s+exactly\s+(.+)$/i)
+  if (contents?.[1] && /\bsection\b/i.test(current)) {
+    const fused = `${current} containing exactly ${contents[1]}`
+    return containsMeaning(output, fused) || containsMeaning(output, compactInstruction(fused))
+  }
+
+  return false
+}
+
 const containsBehaviorAction = (
   output: string,
   action: string,
   previousAction?: string,
+  nextAction?: string,
 ): boolean => {
   if (containsOriginalOrCompact(output, action)) return true
+  if (containsPairedIntroduction(output, action, nextAction)) return true
 
   const clean = action.trim().replace(/[.!?]+$/, '')
 
@@ -102,7 +137,8 @@ const assertRelationships = (spec: Readonly<PreparedSpec>, output: string): void
     }
 
     const previousAction = spec.criticalBehavior[index - 1]?.action
-    if (!containsBehaviorAction(output, rule.action, previousAction)) {
+    const nextAction = spec.criticalBehavior[index + 1]?.action
+    if (!containsBehaviorAction(output, rule.action, previousAction, nextAction)) {
       throw new Error('critical behavior coverage failed')
     }
 
