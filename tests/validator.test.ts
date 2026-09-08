@@ -131,6 +131,17 @@ describe('validateCompile', () => {
     expect(() => validateCompile(input, spec, compressed.replace('title and author search', 'a blank page'))).toThrow(/behavior|critical/i)
   })
 
+  it('accepts compact search-experience control fusion only when the named control and search target survive', () => {
+    const spec = compressedSpec([
+      { action: 'Visit Setup starts with an Add Visit button' },
+      { action: 'Pressing Add Visit turns the page into a provider search experience' },
+    ])
+    const compressed = compressedOutput('Visit Setup: Add Visit opens provider search.')
+
+    expect(() => validateCompile(input, spec, compressed)).not.toThrow()
+    expect(() => validateCompile(input, spec, compressed.replace('provider search', 'calendar'))).toThrow(/behavior|critical/i)
+  })
+
   it('accepts safe immediate control pronoun compression only when the effect survives', () => {
     const spec = compressedSpec([
       { action: 'Include an Edit Book button at top-right' },
