@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { snapshotInput } from '../src/input'
+import { snapshotInput } from '../src/input.js'
 
-// RED: production input snapshot intentionally does not exist yet.
 describe('snapshotInput', () => {
   it('requires all four current-generation inputs', () => {
     expect(() => snapshotInput({
